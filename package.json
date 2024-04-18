@@ -1,5 +1,5 @@
 {
-  "name": "skeleton",
+  "name": "relay",
   "version": "1.0.0",
   "description": "Typescript starter template for weblab students",
   "scripts": {
@@ -36,7 +36,7 @@
     "express-session": "^1.17.1",
     "google-auth-library": "^6.1.4",
     "jwt-decode": "^3.1.2",
-    "mongoose": "^5.11.11",
+    "mongoose": "^8.2.2",
     "morgan": "^1.10.0",
     "nodemon": "^2.0.7",
     "react": "^18.2.0",
@@ -47,5 +47,14 @@
     "socket.io-client": "^3.0.5",
     "ts-node": "^10.9.1",
     "typescript": "^4.9"
-  }
+  },
+  "main": "webpack.config.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/joeychun/relay.git"
+  },
+  "bugs": {
+    "url": "https://github.com/joeychun/relay/issues"
+  },
+  "homepage": "https://github.com/joeychun/relay#readme"
 }
