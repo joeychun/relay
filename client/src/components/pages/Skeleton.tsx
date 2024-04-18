@@ -1,3 +1,5 @@
+/* CONSIDER GETTING: @mui/material */
+
 import React from "react";
 import {
   GoogleOAuthProvider,
@@ -9,7 +11,7 @@ import {
 import "./Skeleton.css";
 
 //TODO(weblab student): REPLACE WITH YOUR OWN CLIENT_ID
-const GOOGLE_CLIENT_ID = "FILL ME IN";
+const GOOGLE_CLIENT_ID = "490724076666-g4vf4bbngcqu6v3qgtrcpiokm5a3cusd.apps.googleusercontent.com";
 
 type Props = {
   userId?: string;
