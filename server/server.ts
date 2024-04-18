@@ -22,8 +22,8 @@ if (mongoConnectionURL === undefined) {
 }
 mongoose
   .connect(mongoConnectionURL, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
+    // useNewUrlParser: true,
+    // useUnifiedTopology: true,
     dbName: databaseName,
   })
   .then(() => console.log("Connected to MongoDB"))

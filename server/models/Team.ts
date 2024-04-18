@@ -8,7 +8,6 @@ export enum TeamStatus {
 
 export interface Team extends Document {
   name: string;
-  code: string;
   dateStarted?: Date;
   dateEnded?: Date;
   users: Types.ObjectId[];
@@ -22,12 +21,18 @@ export interface Team extends Document {
 const TeamSchema: Schema = new Schema(
   {
     name: { type: String, required: true },
-    code: { type: String, required: true },
     dateStarted: { type: Date, required: false },
     dateEnded: { type: Date, required: false },
     users: [{ type: Schema.Types.ObjectId, ref: "User" }],
-    problemAttempts: [{ type: Schema.Types.ObjectId, ref: "RelayProblemAttempt" }],
-    status: { type: String, enum: Object.values(TeamStatus), required: true },
+    problemAttempts: [
+      { type: Schema.Types.ObjectId, ref: "RelayProblemAttempt" },
+    ],
+    status: {
+      type: String,
+      enum: Object.values(TeamStatus),
+      default: TeamStatus.Recruiting,
+      required: true,
+    },
     longestStreak: { type: Number, default: 0, required: true },
     currentStreak: { type: Number, default: 0, required: true },
   },

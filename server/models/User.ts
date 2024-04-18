@@ -4,6 +4,7 @@ const UserSchema = new Schema({
   name: String,
   googleid: String,
   cookieToken: String,
+  isAdmin: Boolean,
 });
 
 export interface User extends Document {
@@ -11,6 +12,7 @@ export interface User extends Document {
   googleid: string;
   _id: string;
   cookieToken: string;
+  isAdmin: boolean;
 }
 
 const UserModel = model<User>("User", UserSchema);
