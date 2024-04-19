@@ -113,6 +113,7 @@ export type SubproblemData = {
 export type subproblemAttemptResponseType = {
   subproblemAttempt: SubproblemAttempt;
   subproblemData: SubproblemData;
+  previousSubproblemAttempt?: SubproblemAttempt; // empty if first to go
 };
 
 // export enum ProblemResultType {
@@ -140,6 +141,10 @@ export type publishTeamRequestBodyType = {
 
 export type getUserTeamsResponseType = {
   teams: Team[];
+};
+
+export type joinTeamRequestBodyType = {
+  code: string;
 };
 
 export type teamRequestBodyType = {

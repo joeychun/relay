@@ -27,41 +27,11 @@ import {
   SubproblemModel,
 } from "../models/Problem";
 
-async function assignRandomNextUser(parentProblemAttemptId: string) {
-  const parentProblemAttempt = await RelayProblemAttemptModel.findById(
-    parentProblemAttemptId
-  ).populate<{ subproblemAttempts: SubproblemAttempt[] }>("subproblemAttempts");
-  if (!parentProblemAttempt) {
-    throw new Error("no parent");
-  }
-  const prevUsers = parentProblemAttempt.subproblemAttempts.map((attempt) =>
-    attempt.assignedUser._id.toString()
-  );
-
-  const team = await TeamModel.findById(parentProblemAttempt.team).populate<{
-    users: User[];
-  }>("users");
-  if (!team) {
-    throw new Error("Team not found");
-  }
-  const teamUsers = team.users.map((user) => user._id.toString());
-
-  // if everyone has been chosen
-
-  const availableUsers = teamUsers.filter((user) => !prevUsers.includes(user));
-
-  if (availableUsers.length == 0) {
-    // shouldn't happen
-    throw new Error("all users are taken");
-  }
-  // Select a random user from the available users
-  const randomIndex = Math.floor(Math.random() * availableUsers.length);
-  const randomlySelectedUser = availableUsers[randomIndex];
-  console.log("Randomly selected user:", randomlySelectedUser);
-  return randomlySelectedUser;
-}
-
-export async function createSubproblemAttempt(relayProblemAttemptId: string) {
+export async function createSubproblemAttempt(
+  relayProblemAttemptId: string,
+  userId: string,
+  index: number
+) {
   const parentProblemAttempt = await RelayProblemAttemptModel.findById(
     relayProblemAttemptId
   ).populate<{ subproblemAttempts: SubproblemAttempt[] }>("subproblemAttempts");
@@ -69,8 +39,11 @@ export async function createSubproblemAttempt(relayProblemAttemptId: string) {
     // should not happen
     throw new Error("no parent problem found");
   }
-  if (parentProblemAttempt.subproblemAttempts.length == 3) {
+  if (parentProblemAttempt.subproblemAttempts.length == NUM_PROBLEMS) {
     throw new Error("should not be creating a new subproblem attempt");
+  }
+  if (parentProblemAttempt.subproblemAttempts.length != index) {
+    throw new Error("Something went wrong");
   }
 
   const parentRelayProblem = await RelayProblemModel.findById(
@@ -82,19 +55,13 @@ export async function createSubproblemAttempt(relayProblemAttemptId: string) {
     throw new Error("no parent problem found");
   }
 
-  const nextUser = await assignRandomNextUser(relayProblemAttemptId);
   const nextSubproblemAttempt = new SubproblemAttemptModel({
     parentProblemAttempt: relayProblemAttemptId,
-    subproblem:
-      parentRelayProblem.subproblems[
-      parentProblemAttempt.subproblemAttempts.length
-      ],
-    assignedUser: nextUser, // randomly pick user
+    subproblem: parentRelayProblem.subproblems[parentProblemAttempt.subproblemAttempts.length],
+    assignedUser: userId,
   });
   const savedSubproblemAttempt = await nextSubproblemAttempt.save();
   console.log("Added new subproblem attempt");
-  parentProblemAttempt.subproblemAttempts.push(savedSubproblemAttempt);
-  await parentProblemAttempt.save();
   return savedSubproblemAttempt;
 }
 
@@ -103,18 +70,14 @@ const submitSubproblemAttempt = async (
   res // subproblemAttemptResponseType
 ) => {
   const myUserId: string = req.user?._id as string;
-  const subproblemAttempt = await SubproblemAttemptModel.findById(
-    req.body.subproblemAttemptId
-  );
+  const subproblemAttempt = await SubproblemAttemptModel.findById(req.body.subproblemAttemptId);
   if (!subproblemAttempt) {
     throw new Error("No subproblem attempt found.");
   }
   if (subproblemAttempt.assignedUser._id.toString() != myUserId) {
     throw new Error("This problem has not been assigned to you.");
   }
-  const subproblem = (await SubproblemModel.findById(
-    subproblemAttempt.subproblem
-  )) as Subproblem;
+  const subproblem = (await SubproblemModel.findById(subproblemAttempt.subproblem)) as Subproblem;
   // TODO: will this lock create an issue?
   await lock.acquire([subproblemAttempt?.parentProblemAttempt], async () => {
     subproblemAttempt.answer = req.body.answer.trim();
@@ -123,9 +86,7 @@ const submitSubproblemAttempt = async (
     // get parent problem
     const parentProblemAttempt = await RelayProblemAttemptModel.findById(
       subproblemAttempt.parentProblemAttempt
-    ).populate<{ subproblemAttempts: SubproblemAttempt[] }>(
-      "subproblemAttempts"
-    );
+    ).populate<{ subproblemAttempts: SubproblemAttempt[] }>("subproblemAttempts");
     if (!parentProblemAttempt) {
       // should not happen
       throw new Error("no parent problem found");
@@ -140,17 +101,12 @@ const submitSubproblemAttempt = async (
     }
 
     // TODO: LATER EXTENSION - show progress of where your teammates are.
-    // Only create new if my submission is the latest subproblem
     if (
       parentProblemAttempt.subproblemAttempts.length < NUM_PROBLEMS &&
-      parentProblemAttempt.subproblemAttempts[
-        parentProblemAttempt.subproblemAttempts.length - 1
-      ]._id == subproblemAttempt._id
+      parentProblemAttempt.subproblemAttempts[parentProblemAttempt.subproblemAttempts.length - 1]
+        ._id == subproblemAttempt._id
     ) {
-      // TODO: notify the next user
-      const newSubproblem = await createSubproblemAttempt(
-        parentProblemAttempt._id
-      );
+      // TODO: notify the next user here
     }
 
     return res.status(200).json({
@@ -180,6 +136,7 @@ const loadSubproblemAttempt = async (
 
   var subproblemAttempt;
   var subproblem;
+  var previousSubproblemAttempt;
   const activeProblem = await RelayProblemModel.findOne({
     status: ProblemStatus.Active,
   });
@@ -189,21 +146,30 @@ const loadSubproblemAttempt = async (
     const problemAttempt = await RelayProblemAttemptModel.findOne({
       problem: activeProblem,
       team: myTeam,
-    });
+    }).populate<{ subproblemAttempts: SubproblemAttempt[] }>("subproblemAttempts");
     if (!!problemAttempt) {
       subproblemAttempt = await SubproblemAttemptModel.findOne({
         parentProblemAttempt: problemAttempt,
         assignedUser: myUserId,
       });
       subproblem = await SubproblemModel.findById(subproblemAttempt.subproblem);
+      if (subproblem.index > 0) {
+        previousSubproblemAttempt = problemAttempt.subproblemAttempts[subproblem.index - 1];
+      }
+    } else {
+      console.log("Active team and problem, but no attempt found.");
     }
+  } else {
+    console.log("No active problem or team found");
   }
+
   return res.status(200).json({
     subproblemAttempt,
     subproblemData: {
       question: subproblem?.question,
       category: subproblem?.category,
     },
+    previousSubproblemAttempt,
   });
 };
 

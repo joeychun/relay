@@ -47,10 +47,7 @@ const createProblem = async (
   const myUserId: string = req.user?._id as string;
   await assertUserIsAdmin(myUserId);
 
-  if (
-    req.body.questions.length != NUM_PROBLEMS ||
-    req.body.answers.length != NUM_PROBLEMS
-  ) {
+  if (req.body.questions.length != NUM_PROBLEMS || req.body.answers.length != NUM_PROBLEMS) {
     throw new Error("incorrect number of questions for new problem");
   }
 
@@ -76,10 +73,17 @@ const createProblem = async (
   return res.status(200).json({ problem: savedProblem });
 };
 
-export async function createRelayProblemAttempt(
-  teamId: string,
-  problemId: string
-) {
+function shuffleArray<T>(array: T[]): T[] {
+  const shuffledArray = array.slice();
+  for (let i = shuffledArray.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffledArray[i], shuffledArray[j]] = [shuffledArray[j], shuffledArray[i]];
+  }
+
+  return shuffledArray;
+}
+
+export async function createRelayProblemAttempt(teamId: string, problemId: string) {
   // 1. create the relay problem attempt
   // 2. create the first subproblem attempt
   // something like relayProblem.subproblemAttempts.push(createSubproblemAttempt());
@@ -89,8 +93,52 @@ export async function createRelayProblemAttempt(
     team: teamId,
   });
   const savedAttempt = await relayProblemAttempt.save();
-  await createSubproblemAttempt(savedAttempt._id);
-  return savedAttempt;
+
+  const team = await TeamModel.findById(teamId).populate<{
+    users: User[];
+  }>("users");
+  if (!team) {
+    throw new Error("Team not found");
+  }
+  if (team.status != TeamStatus.Active) {
+    throw new Error("Team is not active");
+  }
+  const teamUsers = team.users.map((user) => user._id.toString());
+
+  if (teamUsers.length != NUM_PROBLEMS) {
+    throw new Error("Incorrect number of members");
+  }
+
+  const shuffledUsers = shuffleArray(teamUsers);
+
+  const parentRelayProblem = await RelayProblemModel.findById(problemId).populate<{
+    subproblems: Subproblem[];
+  }>("subproblems");
+  if (!parentRelayProblem || parentRelayProblem.subproblems.length == NUM_PROBLEMS) {
+    // should not happen
+    throw new Error("no parent problem found");
+  }
+
+  const savedAttemptWithSubproblemAttempts = await RelayProblemAttemptModel.findById(
+    savedAttempt._id
+  ).populate<{
+    subproblemAttempts: SubproblemAttempt[];
+  }>("subproblemAttempts");
+
+  if (!savedAttemptWithSubproblemAttempts) {
+    throw new Error("should not happen");
+  }
+
+  for (let i = 0; i < NUM_PROBLEMS; i++) {
+    const newSubproblem = (await createSubproblemAttempt(
+      parentRelayProblem._id,
+      shuffledUsers[i],
+      i
+    )) as SubproblemAttempt;
+    savedAttemptWithSubproblemAttempts.subproblemAttempts.push(newSubproblem);
+  }
+  const updatedRelayProblemAttempt = await savedAttemptWithSubproblemAttempts.save();
+  return updatedRelayProblemAttempt;
 }
 
 async function gradeRelayProblemAttempt(relayProblemAttemptId: string) {
@@ -102,29 +150,21 @@ async function gradeRelayProblemAttempt(relayProblemAttemptId: string) {
     // should not happen
     throw new Error("no parent problem found");
   }
-  const parentRelayProblem = await RelayProblemModel.findById(
-    parentProblemAttempt
-  ).populate<{ subproblems: Subproblem[] }>("subproblems");
+  const parentRelayProblem = await RelayProblemModel.findById(parentProblemAttempt).populate<{
+    subproblems: Subproblem[];
+  }>("subproblems");
   if (!parentRelayProblem) {
     // should not happen
     throw new Error("no parent problem found");
   }
   const team = (await TeamModel.findById(parentProblemAttempt.team)) as Team;
-  if (
-    parentProblemAttempt.subproblemAttempts.length !=
-    parentRelayProblem.subproblems.length
-  ) {
+  if (parentProblemAttempt.subproblemAttempts.length != parentRelayProblem.subproblems.length) {
     // longest streak not affected, current streak is now 0
     team.currentStreak = 0;
   } else {
-    const gotAllRight = parentRelayProblem.subproblems.every(
-      (subproblem, i) => {
-        return (
-          parentProblemAttempt.subproblemAttempts[i].answer ===
-          subproblem.answer
-        );
-      }
-    );
+    const gotAllRight = parentRelayProblem.subproblems.every((subproblem, i) => {
+      return parentProblemAttempt.subproblemAttempts[i].answer === subproblem.answer;
+    });
     if (gotAllRight) {
       team.currentStreak += 1;
       team.longestStreak = Math.max(team.currentStreak, team.longestStreak);
@@ -146,9 +186,7 @@ const releaseProblem = async (
 
   const teams: Team[] = await getAllActiveTeams();
 
-  const thisProblem = (await RelayProblemModel.findById(
-    req.body.problemId
-  )) as RelayProblem;
+  const thisProblem = (await RelayProblemModel.findById(req.body.problemId)) as RelayProblem;
 
   // check no active problem exists already
   const activeProblem = await RelayProblemModel.findOne({
@@ -157,9 +195,7 @@ const releaseProblem = async (
   if (!!activeProblem) {
     throw new Error("Active problem already exists.");
   }
-  Promise.all(
-    teams.map((team) => createRelayProblemAttempt(team.id, req.body.problemId))
-  )
+  Promise.all(teams.map((team) => createRelayProblemAttempt(team.id, req.body.problemId)))
     .then((results) => {
       console.log("Success", results);
     })
@@ -193,9 +229,7 @@ const closeProblem = async (
   });
 
   // TODO: use lock?
-  Promise.all(
-    relayProblemAttempts.map((attempt) => gradeRelayProblemAttempt(attempt._id))
-  )
+  Promise.all(relayProblemAttempts.map((attempt) => gradeRelayProblemAttempt(attempt._id)))
     .then((results) => {
       console.log("Success", results);
     })
@@ -207,8 +241,23 @@ const closeProblem = async (
   return res.status(200).json({ problem: savedProblem });
 };
 
+const loadRecentProblems = async (
+  req: TypedRequestBody<{}>,
+  res // problemResponseType
+) => {
+  const myUserId: string = req.user?._id as string;
+  await assertUserIsAdmin(myUserId);
+
+  const problems = await RelayProblemModel.find({})
+    .sort({ date: -1 }) // sort by date in desc order
+    .limit(5); // get the latest five
+
+  return res.status(200).json({ problems });
+};
+
 export default {
   createProblem,
   releaseProblem,
   closeProblem,
+  loadRecentProblems,
 };

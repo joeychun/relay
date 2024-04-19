@@ -1,6 +1,7 @@
 import UserModel from "../models/User";
 
 import {
+  NUM_PROBLEMS,
   User,
   addProblemRequestBodyType,
   createTeamRequestBodyType,
@@ -8,6 +9,7 @@ import {
   getTeamWithUsers,
   getUserActiveOrRecruitingTeam,
   getUserTeams,
+  joinTeamRequestBodyType,
   lock,
   setUserNameRequestBodyType,
   submitSubproblemAttemptRequestBodyType,
@@ -19,11 +21,8 @@ import { TypedRequestBody } from "../../shared/apiTypes";
 import socketManager from "../server-socket";
 import mongoose, { Types, UpdateWriteOpResult } from "mongoose";
 import { Team, TeamModel, TeamStatus } from "../models/Team";
-import {
-  ProblemStatus,
-  RelayProblemAttemptModel,
-  RelayProblemModel,
-} from "../models/Problem";
+import { ProblemStatus, RelayProblemAttemptModel, RelayProblemModel } from "../models/Problem";
+import { createRelayProblemAttempt } from "./adminCalls";
 
 const getCurrentUserTeam = async (
   req: TypedRequestBody<{}>,
@@ -33,6 +32,16 @@ const getCurrentUserTeam = async (
   const myUserId: string = req.user?._id as string;
   const team = await getUserActiveOrRecruitingTeam(myUserId);
   return res.status(200).json({ team });
+};
+
+const loadMyUser = async (
+  req: TypedRequestBody<{}>,
+  res // User
+) => {
+  const myUserId: string = req.user?._id as string;
+
+  const user = await getMyUser(myUserId);
+  res.status(200).json({ user });
 };
 
 const setUserName = async (
@@ -50,6 +59,11 @@ const setUserName = async (
   res.status(200).json({ user: savedUser });
 };
 
+function generateRandomCode() {
+  const randomCode = Math.floor(Math.random() * 9000) + 1000;
+  return randomCode.toString();
+}
+
 const createTeam = async (
   req: TypedRequestBody<createTeamRequestBodyType>,
   res // teamResponseType
@@ -65,6 +79,7 @@ const createTeam = async (
     // Create a new converted game with the player who joined
     const newTeam = new TeamModel({
       name: req.body.name,
+      code: generateRandomCode(),
     });
     newTeam.users.push(new Types.ObjectId(myUserId));
     const savedTeam = await newTeam.save();
@@ -73,23 +88,22 @@ const createTeam = async (
   });
 };
 
-const joinTeam = async (req: TypedRequestBody<teamRequestBodyType>, res) => {
+const joinTeam = async (req: TypedRequestBody<joinTeamRequestBodyType>, res) => {
   const myUserId: string = req.user?._id as string;
-  const team = await getTeamWithUsers(req.body.teamId);
+  const team = await TeamModel.findOne({ code: req.body.code }).populate<{
+    users: User[];
+  }>("users");
   if (!team) {
-    console.log(`Team with id ${req.body.teamId} not found`);
-    res.status(404).json("Team not found");
-    return;
+    throw new Error(`Team with code ${req.body.code} not found`);
   }
   // too full
   // FOR NOW, EACH TEAM MUST HAVE THREE PEOPLE
   if (team.users.length == 3) {
     throw new Error("Team is full already.");
   }
-
   // not in recruiting stage
   if (team.status != TeamStatus.Recruiting) {
-    throw new Error("Team is not recruiting.");
+    throw new Error("Team is not accepting new members.");
   }
 
   // already has a team
@@ -102,19 +116,19 @@ const joinTeam = async (req: TypedRequestBody<teamRequestBodyType>, res) => {
 
   team.users.push(myUser);
   const savedTeam = await team.save();
+  if (savedTeam.users.length == NUM_PROBLEMS) {
+    // activate and creates a new problem for the current problem
+    await activateTeam(savedTeam._id);
+  }
+
   console.log(`Team with id ${savedTeam._id} joined`);
   res.status(200).json({ team: savedTeam });
 };
 
-const publishTeam = async (
-  req: TypedRequestBody<teamRequestBodyType>,
-  res // teamResponseType
-) => {
-  const myUserId: string = req.user?._id as string;
-
-  const team = await getTeamWithUsers(req.body.teamId);
-  // TODO: on the FE, don't show publish button if not at least two users
-  // too full
+async function activateTeam(teamId: string) {
+  // change team status
+  // create a new relay problem attempt for current active problem
+  const team = await getTeamWithUsers(teamId);
   if (team.users.length != 3) {
     throw new Error("Need three people on a team.");
   }
@@ -127,9 +141,16 @@ const publishTeam = async (
   team.status = TeamStatus.Active;
   team.dateStarted = new Date();
   const savedTeam = await team.save();
-  console.log(`Team with id ${savedTeam._id} joined`);
-  res.status(200).json({ team: savedTeam });
-};
+  console.log(`Team with id ${savedTeam._id} activated`);
+
+  // create new problem attempt for active team if problem exists
+  const activeProblem = await RelayProblemModel.findOne({
+    status: ProblemStatus.Active,
+  });
+  if (!!activeProblem) {
+    await createRelayProblemAttempt(teamId, activeProblem._id);
+  }
+}
 
 const endTeam = async (
   req: TypedRequestBody<teamRequestBodyType>,
@@ -166,10 +187,10 @@ const getTeamInfo = async (
 };
 
 export default {
+  loadMyUser,
   setUserName,
   getCurrentUserTeam,
   createTeam,
-  publishTeam,
   joinTeam,
   endTeam,
   loadUserTeams,

@@ -13,6 +13,7 @@ export interface Team extends Document {
   users: Types.ObjectId[];
   problemAttempts: Types.ObjectId[];
   status: TeamStatus;
+  code: string;
   // for easier stats
   longestStreak: number;
   currentStreak: number;
@@ -24,9 +25,8 @@ const TeamSchema: Schema = new Schema(
     dateStarted: { type: Date, required: false },
     dateEnded: { type: Date, required: false },
     users: [{ type: Schema.Types.ObjectId, ref: "User" }],
-    problemAttempts: [
-      { type: Schema.Types.ObjectId, ref: "RelayProblemAttempt" },
-    ],
+    problemAttempts: [{ type: Schema.Types.ObjectId, ref: "RelayProblemAttempt" }],
+    code: { type: String, required: true },
     status: {
       type: String,
       enum: Object.values(TeamStatus),
