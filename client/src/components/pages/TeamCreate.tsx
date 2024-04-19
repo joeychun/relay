@@ -2,7 +2,7 @@
 import { css, jsx } from '@emotion/react';
 import React, { useState } from 'react';
 import Button from '@mui/material/Button';
-import Sidebar from './../Sidebar';
+import Sidebar from '../Sidebar';
 import AddIcon from '@mui/icons-material/AddToPhotos';
 import ConnectIcon from '@mui/icons-material/ConnectWithoutContact';
 
@@ -33,10 +33,16 @@ const styles = {
     align-items: flex-start;
     margin-right: 72px;
   `,
+  userNameHeader: css`
+    font-family: Roboto;
+    font-size: 28px;
+    margin-top: 12px;
+    text-align: left;
+  `,
   userName: css`
     font-family: Roboto;
-    font-size: 2rem;
-    margin-bottom: 8px;
+    font-size: 24px;
+    margin-bottom: 12px;
     text-align: left;
   `,
   buttonContainer: css`
@@ -48,7 +54,8 @@ const styles = {
   button: css`
     width: 200px;
     height: 60px;
-    margin-bottom: 16px;
+    margin-top: 8px;
+    margin-bottom: 8px;
     font-size: 1.5rem;
     background-color: #ffd166;
     color: #000000;
@@ -67,6 +74,10 @@ const styles = {
       color: red;
     }
   `,
+  bulletpoint: css`
+    margin-left: 8px;  
+    padding-left: 8px;
+  `,
 };
 
 const TeamPage = ({ teamSize }) => { // For now, it's put as teamSize. Later a list of Users should be passed as a prop.
@@ -80,13 +91,16 @@ const TeamPage = ({ teamSize }) => { // For now, it's put as teamSize. Later a l
     <div css={styles.root}>
       <main css={styles.content}>
         {showRedText && (
-          <div css={styles.redText}>&nbsp;</div> // For alignment
+          <div css={styles.redText}>&nbsp;<br /> &nbsp;</div> // For alignment
         )}
         <div css={styles.container}>
           <div css={styles.teamContainer}>
-            <div css={styles.userName}>User 1aaa</div>
-            <div css={styles.userName}>User 2</div>
-            <div css={styles.userName}>User 3</div>
+            <div css={styles.userNameHeader}><b><u>Team</u></b></div>
+            <ul css={styles.bulletpoint}>
+              <li><div css={styles.userName}>User 1aaa</div></li>
+              <li><div css={styles.userName}>User 2</div></li>
+              <li><div css={styles.userName}>User 3</div></li>
+            </ul>
           </div>
           <div css={styles.buttonContainer}>
             {teamSize < 3 ?
@@ -134,6 +148,8 @@ const TeamPage = ({ teamSize }) => { // For now, it's put as teamSize. Later a l
         {showRedText && (
           <div css={styles.redText}>
             Share Invitation Link: <a href="#">asdf</a>
+            <br />
+              Or, Share Team Code: <a href="#">asdf</a>
           </div>
         )}
       </main>

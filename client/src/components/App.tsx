@@ -11,7 +11,7 @@ import User from "../../../shared/User";
 import "../utilities.css";
 
 import Lobby from "./pages/Lobby";
-import Team from "./pages/Team";
+import TeamCreate from "./pages/TeamCreate";
 
 const App = () => {
   const [userId, setUserId] = useState<string | undefined>(undefined);
@@ -58,7 +58,7 @@ const App = () => {
           path="/"
         />
         <Route path="/lobby" element={<Lobby />} />
-        <Route path="/team" element={<Team teamSize={2} />} />
+        <Route path="/team-create" element={<TeamCreate teamSize={2} />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>

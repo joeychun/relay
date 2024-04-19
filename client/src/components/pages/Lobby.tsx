@@ -5,7 +5,7 @@ import Button from '@mui/material/Button';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import GroupAddIcon from '@mui/icons-material/GroupAdd';
 
-import Sidebar from './../Sidebar';
+import Sidebar from '../Sidebar';
 
 const drawerWidth = 180;
 
