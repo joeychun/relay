@@ -7,7 +7,7 @@ import AccountCircleIcon from '@material-ui/icons/AccountCircle';
 import AddCircleIcon from '@material-ui/icons/AddCircle';
 import GroupAddIcon from '@material-ui/icons/GroupAdd';
 
-const drawerWidth = 180;
+const drawerWidth = 140;
 
 const useStyles = makeStyles((theme) => ({
   drawer: {

@@ -31,7 +31,7 @@ const styles = {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    margin-right: 72px;
+    margin-right: 36px;
   `,
   userNameHeader: css`
     font-family: Roboto;
@@ -49,7 +49,7 @@ const styles = {
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-left: 72px;
+    margin-left: 36px;
   `,
   button: css`
     width: 200px;
@@ -78,10 +78,29 @@ const styles = {
     margin-left: 8px;  
     padding-left: 8px;
   `,
+  teamInfoContainer: css`
+    background-color: #ffffff;
+    border-radius: 8px;
+    height: 190px;
+    padding: 30px;
+    padding-right: 100px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+  `,
+  teamMember: css`
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+    font-family: Roboto;
+    font-size: 18px;
+  `,
 };
 
-const TeamPage = ({ teamSize }) => { // For now, it's put as teamSize. Later a list of Users should be passed as a prop.
+const TeamCreatePage = ({ teamSize }) => { // For now, it's put as teamSize. Later a list of Users should be passed as a prop.
   const [showRedText, setShowRedText] = useState(false); // State to manage the visibility of the red text/link
+
+  // Sample data for demonstration
+  const teammates = ["User 1", "User 2", "User 3"];
 
   const handleRecruitButtonClick = () => {
     setShowRedText(true); // Show the red text/link when the "Recruit" button is clicked
@@ -95,12 +114,15 @@ const TeamPage = ({ teamSize }) => { // For now, it's put as teamSize. Later a l
         )}
         <div css={styles.container}>
           <div css={styles.teamContainer}>
-            <div css={styles.userNameHeader}><b><u>Team</u></b></div>
-            <ul css={styles.bulletpoint}>
-              <li><div css={styles.userName}>User 1aaa</div></li>
-              <li><div css={styles.userName}>User 2</div></li>
-              <li><div css={styles.userName}>User 3</div></li>
-            </ul>
+            <div css={styles.teamInfoContainer}>
+              <div css={styles.userNameHeader}><b><u>Team</u></b></div>
+              <ul css={styles.bulletpoint}>
+                {teammates.map((teammate, index) => (
+                  <li key={index}><div css={styles.userName}>{teammate}</div></li>
+                ))}
+              </ul>
+            </div>
+
           </div>
           <div css={styles.buttonContainer}>
             {teamSize < 3 ?
@@ -158,4 +180,4 @@ const TeamPage = ({ teamSize }) => { // For now, it's put as teamSize. Later a l
   );
 };
 
-export default TeamPage;
+export default TeamCreatePage;
