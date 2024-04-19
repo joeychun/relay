@@ -9,7 +9,9 @@ import Skeleton from "./pages/Skeleton";
 import { socket } from "../client-socket";
 import User from "../../../shared/User";
 import "../utilities.css";
+
 import Lobby from "./pages/Lobby";
+import Team from "./pages/Team";
 
 const App = () => {
   const [userId, setUserId] = useState<string | undefined>(undefined);
@@ -56,6 +58,7 @@ const App = () => {
           path="/"
         />
         <Route path="/lobby" element={<Lobby />} />
+        <Route path="/team" element={<Team teamSize={2} />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
