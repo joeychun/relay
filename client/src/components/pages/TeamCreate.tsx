@@ -1,6 +1,5 @@
-/** @jsx jsx */
-import { css, jsx } from '@emotion/react';
 import React, { useState } from 'react';
+import styled from 'styled-components';
 import Button from '@mui/material/Button';
 import Sidebar from '../Sidebar';
 import AddIcon from '@mui/icons-material/AddToPhotos';
@@ -8,50 +7,67 @@ import ConnectIcon from '@mui/icons-material/ConnectWithoutContact';
 
 const drawerWidth = 180;
 
-const styles = {
-  root: css`
-    display: flex;
-    min-height: 100vh;
-    background-color: #faf9f6;
-    color: #000000;
-  `,
-  content: css`
-    flex-grow: 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-  `,
-  container: css`
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-  `,
-  teamContainer: css`
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    margin-right: 36px;
-  `,
-  userNameHeader: css`
-    font-family: Roboto;
-    font-size: 28px;
-    margin-top: 12px;
-    text-align: left;
-  `,
-  userName: css`
-    font-family: Roboto;
-    font-size: 24px;
-    margin-bottom: 12px;
-    text-align: left;
-  `,
-  buttonContainer: css`
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-left: 36px;
-  `,
-  button: css`
+const Container = styled.div`
+  display: flex;
+  min-height: 100vh;
+  background-color: #faf9f6;
+  color: #000000;
+`;
+
+const Content = styled.main`
+  flex-grow: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+`;
+
+const InnerContainer = styled.div`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+`;
+
+const TeamContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-right: 36px;
+`;
+
+const TeamInfoContainer = styled.div`
+  background-color: #ffffff;
+  border-radius: 8px;
+  height: 190px;
+  padding: 30px;
+  padding-right: 100px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+`;
+
+const UserNameHeader = styled.div`
+  font-family: Roboto;
+  font-size: 28px;
+  margin-top: 12px;
+  text-align: left;
+`;
+
+const UserName = styled.div`
+  font-family: Roboto;
+  font-size: 24px;
+  margin-bottom: 12px;
+  text-align: left;
+`;
+
+const ButtonContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-left: 36px;
+`;
+
+const CustomButton = styled(Button)`
+  && {
     width: 200px;
     height: 60px;
     margin-top: 8px;
@@ -64,119 +80,83 @@ const styles = {
     &:hover {
       background-color: #ffd700;
     }
-  `,
-  redText: css`
+  }
+`;
+
+const RedText = styled.div`
+  color: red;
+  font-size: 20px;
+  margin-top: 16px;
+  margin-bottom: 16px;
+  a {
     color: red;
-    font-size: 20px;
-    margin-top: 16px;
-    margin-bottom: 16px;
-    a {
-      color: red;
-    }
-  `,
-  bulletpoint: css`
-    margin-left: 8px;  
-    padding-left: 8px;
-  `,
-  teamInfoContainer: css`
-    background-color: #ffffff;
-    border-radius: 8px;
-    height: 190px;
-    padding: 30px;
-    padding-right: 100px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    margin-bottom: 20px;
-  `,
-  teamMember: css`
-    display: flex;
-    align-items: center;
-    margin-bottom: 8px;
-    font-family: Roboto;
-    font-size: 18px;
-  `,
-};
+  }
+`;
 
-const TeamCreatePage = ({ teamSize }) => { // For now, it's put as teamSize. Later a list of Users should be passed as a prop.
-  const [showRedText, setShowRedText] = useState(false); // State to manage the visibility of the red text/link
+const BulletPoint = styled.div`
+  margin-left: 8px;  
+  padding-left: 8px;
+`;
 
-  // Sample data for demonstration
+const TeamCreatePage = ({ teamSize }) => {
+  const [showRedText, setShowRedText] = useState(false);
   const teammates = ["User 1", "User 2", "User 3"];
 
   const handleRecruitButtonClick = () => {
-    setShowRedText(true); // Show the red text/link when the "Recruit" button is clicked
+    setShowRedText(true);
   };
 
   return (
-    <div css={styles.root}>
-      <main css={styles.content}>
-        {showRedText && (
-          <div css={styles.redText}>&nbsp;<br /> &nbsp;</div> // For alignment
-        )}
-        <div css={styles.container}>
-          <div css={styles.teamContainer}>
-            <div css={styles.teamInfoContainer}>
-              <div css={styles.userNameHeader}><b><u>Team</u></b></div>
-              <ul css={styles.bulletpoint}>
+    <Container>
+      <Content>
+        {showRedText && <RedText>&nbsp;<br /> &nbsp;</RedText>}
+        <InnerContainer>
+          <TeamContainer>
+            <TeamInfoContainer>
+              <UserNameHeader><b><u>Team</u></b></UserNameHeader>
+              <ul>
                 {teammates.map((teammate, index) => (
-                  <li key={index}><div css={styles.userName}>{teammate}</div></li>
+                  <li key={index}><UserName>{teammate}</UserName></li>
                 ))}
               </ul>
-            </div>
-
-          </div>
-          <div css={styles.buttonContainer}>
+            </TeamInfoContainer>
+          </TeamContainer>
+          <ButtonContainer>
             {teamSize < 3 ?
-              <Button
+              <CustomButton
                 variant="contained"
                 color="primary"
-                css={styles.button}
                 startIcon={<AddIcon />}
-                onClick={handleRecruitButtonClick} // Call handleRecruitButtonClick when "Recruit" button is clicked
+                onClick={handleRecruitButtonClick}
               >
                 Recruit
-            </Button>
+              </CustomButton>
               :
-              <Button disabled
-                variant="contained"
-                color="primary"
-                css={styles.button}
-                startIcon={<AddIcon />}
-              >
+              <CustomButton disabled variant="contained" color="primary" startIcon={<AddIcon />}>
                 Recruit
-            </Button>
+              </CustomButton>
             }
             {teamSize < 3 ?
-              <Button disabled
-                variant="contained"
-                color="primary"
-                css={styles.button}
-                startIcon={<ConnectIcon />}
-              >
+              <CustomButton disabled variant="contained" color="primary" startIcon={<ConnectIcon />}>
                 Relay!
-            </Button>
+              </CustomButton>
               :
-              <Button
-                variant="contained"
-                color="primary"
-                css={styles.button}
-                startIcon={<ConnectIcon />}
-              >
+              <CustomButton variant="contained" color="primary" startIcon={<ConnectIcon />}>
                 Relay!
-            </Button>
+              </CustomButton>
             }
-          </div>
-        </div>
-        {/* Red text/link */}
+          </ButtonContainer>
+        </InnerContainer>
         {showRedText && (
-          <div css={styles.redText}>
+          <RedText>
             Share Invitation Link: <a href="#">asdf</a>
             <br />
-              Or, Share Team Code: <a href="#">asdf</a>
-          </div>
+            Or, Share Team Code: <a href="#">asdf</a>
+          </RedText>
         )}
-      </main>
+      </Content>
       <Sidebar />
-    </div>
+    </Container>
   );
 };
 
