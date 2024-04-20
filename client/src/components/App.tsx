@@ -48,6 +48,11 @@ const App = () => {
     post("/api/logout");
   };
 
+  const example = {
+    problemText: "When $x$ is the answer provided by your teammate, what is $2+x$? When $x$ is the answer provided by your teammate, what is $2+x$? ",
+    imageUrl: "https://mathworld.wolfram.com/images/eps-svg/SimsonLine_1000.svg"
+  }
+
   // NOTE:
   // All the pages need to have the props extended via RouteComponentProps for @reach/router to work properly. Please use the Skeleton as an example.
   return (
@@ -62,7 +67,7 @@ const App = () => {
         <Route path="/lobby" element={<Lobby />} />
         <Route path="/team" element={<Team />} />
         <Route path="/team-create" element={<TeamCreate teamSize={2} />} />
-        <Route path="/problem" element={<Problem problem="What is 2+2?" prevAnswer={3} />} />
+        <Route path="/problem" element={<Problem problemText={example.problemText} imageUrl={null} prevAnswer={3} />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
