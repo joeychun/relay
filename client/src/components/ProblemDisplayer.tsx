@@ -26,15 +26,15 @@ const ProblemImage = styled.img`
   max-height: 200px; /* Adjust the maximum height of the image */
 `;
 
-const ProblemDisplayer = ({ text, imageUrl }) => {
+const ProblemDisplayer = ({ text, image }) => {
   return (
     <Container>
       <TextContainer>
         <ProblemText>{text}</ProblemText>
       </TextContainer>
-      {imageUrl && (
+      {image && (
         <ImageContainer>
-          <ProblemImage src={imageUrl} alt="Problem Image" />
+          <ProblemImage src={image} alt="Problem Image" />
         </ImageContainer>
       )}
     </Container>

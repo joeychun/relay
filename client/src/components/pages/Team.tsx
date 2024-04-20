@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
+import TextField from '@mui/material/TextField';
+import EditIcon from '@mui/icons-material/Edit';
 import Sidebar from '../Sidebar';
 
 const Container = styled.div`
@@ -18,9 +20,11 @@ const Content = styled.main`
 `;
 
 const InnerContainer = styled.div`
+  width: 850px;  
   display: flex;
   flex-direction: row;
   align-items: flex-start;
+  justify-content: space-between;
 `;
 
 const TeamContainer = styled.div`
@@ -39,17 +43,32 @@ const TeamInfoContainer = styled.div`
   margin-bottom: 0px;
 `;
 
+const UserName = styled.div`
+  font-family: Roboto;
+  font-weight: 300;
+  font-size: 20px;
+  margin-bottom: 12px;
+  text-align: left;
+  display: flex;
+  align-items: center;
+`;
+
+const EditableTeamName = styled(TextField)`
+  && {
+    input {
+      font-size: 1.5rem !important;
+    }
+    margin-bottom: 12px;
+    text-align: left;
+    display: flex;
+    align-items: center;
+  }
+`;
+
 const UserNameHeader = styled.div`
   font-family: Roboto;
   font-size: 28px;
   margin-top: 12px;
-  text-align: left;
-`;
-
-const UserName = styled.div`
-  font-family: Roboto;
-  font-size: 24px;
-  margin-bottom: 12px;
   text-align: left;
 `;
 
@@ -60,14 +79,20 @@ const BulletPoint = styled.div`
 
 const StatsContainer = styled.div`
   margin-top: 0px;
+  width: 370px;
+  height: auto;
+  display: flex;
+  flex-direction: column;
 `;
 
 const Table = styled.table`
   border-collapse: collapse;
   width: 100%;
+  height: 100%;
   background-color: #ffffff;
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  flex-grow: 1;
 `;
 
 const TableRow = styled.tr`
@@ -86,10 +111,15 @@ const EmojiCell = styled.th`
 
 const TableCell = styled.td`
   padding: 12px 8px;
-  font-size: 20px;
+  font-size: 18px;
   display: flex;
   align-items: center;
   flex: 1;
+`;
+
+const TableCellHeader = styled(TableCell)`
+  font-weight: 700;
+  font-size: 24px;
 `;
 
 const TableCellR = styled(TableCell)`
@@ -98,7 +128,7 @@ const TableCellR = styled(TableCell)`
 
 const DropdownContainer = styled.div`
   width: 100%;
-  max-width: 620px;
+  max-width: 850px;
   margin-top: 24px;
   position: relative;
 `;
@@ -149,9 +179,14 @@ const TeamPage = () => {
   ];
 
   const [isDropdownOpen, setDropdownOpen] = useState(false);
+  const [teamName, setTeamName] = useState('Team Name');
 
   const toggleDropdown = () => {
     setDropdownOpen(!isDropdownOpen);
+  };
+
+  const handleTeamNameChange = (event) => {
+    setTeamName(event.target.value);
   };
 
   return (
@@ -160,7 +195,16 @@ const TeamPage = () => {
         <InnerContainer>
           <TeamContainer>
             <TeamInfoContainer>
-              <UserNameHeader><b><u>Team</u></b></UserNameHeader>
+              <EditableTeamName
+                value={teamName}
+                variant="standard"
+                onChange={handleTeamNameChange}
+                InputProps={{
+                  endAdornment: (
+                    <EditIcon color="primary" style={{ cursor: 'pointer' }} />
+                  ),
+                }}
+              />
               <ul>
                 {teammates.map((teammate, index) => (
                   <li key={index}><UserName>{teammate}</UserName></li>
@@ -174,7 +218,7 @@ const TeamPage = () => {
               <thead>
                 <TableRow>
                   <EmojiCell></EmojiCell>
-                  <TableCell><b>Stats</b></TableCell>
+                  <TableCellHeader>Stats</TableCellHeader>
                   <TableCell></TableCell>
                 </TableRow>
               </thead>
@@ -191,7 +235,7 @@ const TeamPage = () => {
                 </TableRow>
                 <TableRow>
                   <EmojiCell>❓</EmojiCell>
-                  <TableCell>Latest Performance</TableCell>
+                  <TableCell>Latest Results</TableCell>
                   <TableCellR>✅✅❌</TableCellR>
                 </TableRow>
               </tbody>

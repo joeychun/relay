@@ -14,6 +14,8 @@ import Lobby from "./pages/Lobby";
 import TeamCreate from "./pages/TeamCreate";
 import Team from "./pages/Team";
 import Problem from "./pages/Problem";
+import Admin from "./pages/Admin";
+import Profile from "./pages/Profile";
 
 const App = () => {
   const [userId, setUserId] = useState<string | undefined>(undefined);
@@ -50,7 +52,7 @@ const App = () => {
 
   const example = {
     problemText: "When $x$ is the answer provided by your teammate, what is $2+x$? When $x$ is the answer provided by your teammate, what is $2+x$? ",
-    imageUrl: "https://mathworld.wolfram.com/images/eps-svg/SimsonLine_1000.svg"
+    image: "https://mathworld.wolfram.com/images/eps-svg/SimsonLine_1000.svg"
   }
 
   // NOTE:
@@ -65,9 +67,11 @@ const App = () => {
           path="/"
         />
         <Route path="/lobby" element={<Lobby />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/admin" element={<Admin />} />
         <Route path="/team" element={<Team />} />
         <Route path="/team-create" element={<TeamCreate teamSize={2} />} />
-        <Route path="/problem" element={<Problem problemText={example.problemText} imageUrl={null} prevAnswer={3} />} />
+        <Route path="/problem" element={<Problem problemText={example.problemText} image={null} prevAnswer={3} />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>

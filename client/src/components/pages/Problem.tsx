@@ -209,7 +209,7 @@ const EmptyDiv = styled.div`
   height: 20px;
 `;
 
-const ProblemPage = ({ problemText, imageUrl, prevAnswer }) => {
+const ProblemPage = ({ problemText, image, prevAnswer }) => {
   const [userAnswer, setUserAnswer] = useState('');
 
   const handleSubmit = () => {
@@ -237,7 +237,7 @@ const ProblemPage = ({ problemText, imageUrl, prevAnswer }) => {
         </StatusTable>
       </StatusContainer>
       <ProblemContainer>
-        <SizedProblemDisplayer text={<ProblemText variant="h5">{problemText}</ProblemText>} imageUrl={imageUrl} />
+        <SizedProblemDisplayer text={<ProblemText variant="h5">{problemText}</ProblemText>} image={image} />
         {prevAnswer && (
           <Typography variant="body1">Answer provided by teammate: {prevAnswer}</Typography>
         )}

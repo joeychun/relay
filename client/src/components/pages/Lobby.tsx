@@ -4,6 +4,7 @@ import Button from '@mui/material/Button';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import GroupAddIcon from '@mui/icons-material/GroupAdd';
 import Sidebar from '../Sidebar';
+import { Link } from 'react-router-dom';
 
 const Container = styled.div`
   display: flex;
@@ -56,6 +57,7 @@ const LobbyPage = () => {
             variant="contained"
             color="primary"
             startIcon={<AddCircleIcon />}
+            onClick={() => { location.href = '/team-create' }} // TODO: change it to something like <Link>
           >
             Create Team
           </StyledButton>
