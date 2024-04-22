@@ -2,6 +2,7 @@ import UserModel from "../models/User";
 
 import {
   NUM_PROBLEMS,
+  TypedRequestQuery,
   User,
   addProblemRequestBodyType,
   createTeamRequestBodyType,
@@ -35,13 +36,13 @@ const getCurrentUserTeam = async (
 };
 
 const loadMyUser = async (
-  req: TypedRequestBody<{}>,
+  req: TypedRequestQuery<{}>,
   res // User
 ) => {
   const myUserId: string = req.user?._id as string;
 
   const user = await getMyUser(myUserId);
-  res.status(200).json({ user });
+  res.status(200).json({ name: user.name });
 };
 
 const setUserName = async (
@@ -56,7 +57,7 @@ const setUserName = async (
   }
   user.name = req.body.name;
   const savedUser = await user.save();
-  res.status(200).json({ user: savedUser });
+  res.status(200).json({ name: user.name });
 };
 
 function generateRandomCode() {

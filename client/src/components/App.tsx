@@ -16,6 +16,8 @@ import Team from "./pages/Team";
 import Problem from "./pages/Problem";
 import Admin from "./pages/Admin";
 import Profile from "./pages/Profile";
+import UserPage from "./pages/UserPage";
+import LoginPage from "./pages/LoginPage";
 
 const App = () => {
   const [userId, setUserId] = useState<string | undefined>(undefined);
@@ -55,6 +57,8 @@ const App = () => {
     image: "https://mathworld.wolfram.com/images/eps-svg/SimsonLine_1000.svg"
   }
 
+  console.log("USERID", userId);
+
   // NOTE:
   // All the pages need to have the props extended via RouteComponentProps for @reach/router to work properly. Please use the Skeleton as an example.
   return (
@@ -66,6 +70,8 @@ const App = () => {
           }
           path="/"
         />
+        <Route path="/me" element={<UserPage userId={userId} />} />
+        <Route path="/login" element={<LoginPage handleLogin={handleLogin} handleLogout={handleLogout} userId={userId} />} />
         <Route path="/lobby" element={<Lobby />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/admin" element={<Admin />} />

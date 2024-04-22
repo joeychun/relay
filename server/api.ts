@@ -1,6 +1,7 @@
 import express from "express";
 import auth from "./auth";
 import socketManager from "./server-socket";
+import teamCalls from "./apiCalls/teamCalls";
 const router = express.Router();
 
 router.post("/login", auth.login);
@@ -24,6 +25,10 @@ router.post("/initsocket", (req, res) => {
 // |------------------------------|
 // | write your API methods below!|
 // |------------------------------|
+
+router.get(`/user`, teamCalls.loadMyUser);
+router.post(`/username`, teamCalls.setUserName);
+
 
 // anything else falls to this "not found" case
 router.all("*", (req, res) => {

@@ -127,6 +127,10 @@ export type loadProblemResultsResponseType = {
   relayProblemAttempt: RelayProblemAttempt; // with team info too
 };
 
+export type userDataResponseType = {
+  name: string;
+};
+
 export type setUserNameRequestBodyType = {
   name: string;
 };
