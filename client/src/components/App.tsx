@@ -70,7 +70,7 @@ const App = () => {
           }
           path="/"
         />
-        <Route path="/me" element={<UserPage userId={userId} />} />
+        {/* <Route path="/me" element={<UserPage userId={userId} />} /> */}
         <Route path="/login" element={<LoginPage handleLogin={handleLogin} handleLogout={handleLogout} userId={userId} />} />
         <Route path="/lobby" element={<Lobby />} />
         <Route path="/profile" element={<Profile />} />
