@@ -15,7 +15,6 @@ import TeamPage from "./pages/TeamPage"; // TODO: update all filenames to ..Page
 import Problem from "./pages/ProblemPage";
 import Admin from "./pages/Admin";
 import Profile from "./pages/ProfilePage";
-import UserPage from "./pages/UserPage";
 import LoginPage from "./pages/LoginPage";
 import { CircularProgress } from "@mui/material";
 import TeamRecruitingPage from "./pages/TeamRecruitingPage";
