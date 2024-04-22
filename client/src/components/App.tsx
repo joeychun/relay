@@ -73,7 +73,7 @@ const App = () => {
         {/* <Route path="/me" element={<UserPage userId={userId} />} /> */}
         <Route path="/login" element={<LoginPage handleLogin={handleLogin} handleLogout={handleLogout} userId={userId} />} />
         <Route path="/lobby" element={<Lobby />} />
-        <Route path="/profile" element={<Profile />} />
+        <Route path="/profile" element={<Profile userId={userId} />} />
         <Route path="/admin" element={<Admin />} />
         <Route path="/team" element={<Team />} />
         <Route path="/team-create" element={<TeamCreate teamSize={2} />} />
