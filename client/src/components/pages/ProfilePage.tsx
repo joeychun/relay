@@ -10,8 +10,8 @@ import {
 } from "../../../../shared/apiTypes";
 import { Flex, Text } from "rebass/styled-components";
 import { Box, Grid, CircularProgress, Button, TextField, Typography } from "@mui/material";
-import EditNameModal from "../EditNameModal";
-import Sidebar from '../Sidebar';
+import EditNameModal from "../modules/EditNameModal";
+import Sidebar from "../Sidebar";
 
 type ProfilePageProps = {
   userId?: string;
@@ -26,7 +26,7 @@ const ProfilePage = (props: ProfilePageProps) => {
   const editName = (name: string) => {
     if (!userId) return Promise.resolve();
     const body: setUserNameRequestBodyType = {
-      name
+      name,
     };
     console.log("Submitting new name:", name);
     return post("/api/username", body).then((data: userDataResponseType) => {
@@ -41,10 +41,7 @@ const ProfilePage = (props: ProfilePageProps) => {
       return Promise.resolve();
     }
     get(`/api/user`, {}).then((res: userDataResponseType) => {
-      console.log(
-        "username returned",
-        res.name
-      );
+      console.log("username returned", res.name);
       setUsername(res.name);
     });
   };
@@ -57,42 +54,29 @@ const ProfilePage = (props: ProfilePageProps) => {
     }
   }, [userId]);
 
-  if (!props.userId) {
-    return (<Grid container width="100%" direction="column" minHeight={"100vh"}>
-      <Typography variant='h3'>You are not logged in. Take me back to the login.</Typography>
-      <Button
-        fullWidth
-        color="primary"
-        onClick={() => {
-          window.location.href = "/login";
-        }}
-      >
-        Take me!
-      </Button>
-    </Grid>)
+  // TODO: add this to every page
+  if (!userId) {
+    window.location.href = "/login";
   }
 
-
   return (
-    <Flex flexDirection='column' backgroundColor="#faf9f6" minHeight={"100vh"}>
-
+    <Flex flexDirection="column" backgroundColor="#faf9f6" minHeight={"100vh"}>
       <Box marginTop="calc(100vh / 6)" marginLeft="calc(100vw / 6)">
-        <Typography marginBottom="10px" variant="h4">Username: {username ?? 'Anonymous'}</Typography>
+        <Typography marginBottom="10px" variant="h4">
+          Username: {username ?? "Anonymous"}
+        </Typography>
         <Button
-          // color="#ffd166"
           sx={{
             borderRadius: "10px",
             backgroundColor: "#ffd166",
-            color: "black"
-            // width: "300px"
+            color: "black",
           }}
-          // borderRadius="10px"
           onClick={() => {
             setIsEditNameModalOpen(true);
           }}
         >
           Edit username
-      </Button>
+        </Button>
       </Box>
       <EditNameModal
         curUsername={username}

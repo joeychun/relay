@@ -2,6 +2,7 @@ import { Schema, Types, model, Document } from "mongoose";
 
 const UserSchema = new Schema({
   name: String,
+  email: String,
   googleid: String,
   cookieToken: String,
   isAdmin: Boolean,
@@ -9,6 +10,7 @@ const UserSchema = new Schema({
 
 export interface User extends Document {
   name: string;
+  email: string;
   googleid: string;
   _id: string;
   cookieToken: string;

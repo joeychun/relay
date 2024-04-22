@@ -26,13 +26,34 @@ import { ProblemStatus, RelayProblemAttemptModel, RelayProblemModel } from "../m
 import { createRelayProblemAttempt } from "./adminCalls";
 
 const getCurrentUserTeam = async (
-  req: TypedRequestBody<{}>,
-  res // teamResponseType
+  req: TypedRequestQuery<{}>,
+  res // TeamWithInfo
 ) => {
   // return the active or recruiting team
   const myUserId: string = req.user?._id as string;
   const team = await getUserActiveOrRecruitingTeam(myUserId);
-  return res.status(200).json({ team });
+  if (!team) {
+    return res.status(200).json({ teamInfo: null });
+  }
+  const teamWithUsers = await getTeamWithUsers(team.id);
+
+  return res.status(200).json({
+    teamInfo: {
+      name: teamWithUsers.name,
+      dateStarted: teamWithUsers.dateStarted,
+      dateEnded: teamWithUsers.dateEnded,
+      users: teamWithUsers.users.map((u) => ({
+        name: u.name,
+        email: u.email,
+        _id: u._id,
+        isAdmin: u.isAdmin,
+      })),
+      status: teamWithUsers.status,
+      code: teamWithUsers.code,
+      longestStreak: teamWithUsers.longestStreak,
+      currentStreak: teamWithUsers.currentStreak,
+    },
+  });
 };
 
 const loadMyUser = async (
@@ -99,7 +120,7 @@ const joinTeam = async (req: TypedRequestBody<joinTeamRequestBodyType>, res) => 
   }
   // too full
   // FOR NOW, EACH TEAM MUST HAVE THREE PEOPLE
-  if (team.users.length == 3) {
+  if (team.users.length == NUM_PROBLEMS) {
     throw new Error("Team is full already.");
   }
   // not in recruiting stage
@@ -130,8 +151,8 @@ async function activateTeam(teamId: string) {
   // change team status
   // create a new relay problem attempt for current active problem
   const team = await getTeamWithUsers(teamId);
-  if (team.users.length != 3) {
-    throw new Error("Need three people on a team.");
+  if (team.users.length != NUM_PROBLEMS) {
+    throw new Error(`Need ${NUM_PROBLEMS} people on a team.`);
   }
 
   // not in recruiting stage
@@ -179,11 +200,11 @@ const loadUserTeams = async (
 };
 
 const getTeamInfo = async (
-  req: TypedRequestBody<teamRequestBodyType>,
+  req: TypedRequestQuery<teamRequestBodyType>,
   res // teamResponseType
 ) => {
   const myUserId: string = req.user?._id as string;
-  const team = await getTeamWithUsers(req.body.teamId);
+  const team = await getTeamWithUsers(req.query.teamId);
   return res.status(200).json({ team });
 };
 

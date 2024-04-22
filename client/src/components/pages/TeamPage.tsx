@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import styled from 'styled-components';
-import TextField from '@mui/material/TextField';
-import EditIcon from '@mui/icons-material/Edit';
-import Sidebar from '../Sidebar';
+import React, { useState } from "react";
+import styled from "styled-components";
+import TextField from "@mui/material/TextField";
+import EditIcon from "@mui/icons-material/Edit";
+import Sidebar from "../Sidebar";
 
 const Container = styled.div`
   display: flex;
@@ -20,7 +20,7 @@ const Content = styled.main`
 `;
 
 const InnerContainer = styled.div`
-  width: 850px;  
+  width: 850px;
   display: flex;
   flex-direction: row;
   align-items: flex-start;
@@ -73,7 +73,7 @@ const UserNameHeader = styled.div`
 `;
 
 const BulletPoint = styled.div`
-  margin-left: 8px;  
+  margin-left: 8px;
   padding-left: 8px;
 `;
 
@@ -179,7 +179,7 @@ const TeamPage = () => {
   ];
 
   const [isDropdownOpen, setDropdownOpen] = useState(false);
-  const [teamName, setTeamName] = useState('Team Name');
+  const [teamName, setTeamName] = useState("Team Name");
 
   const toggleDropdown = () => {
     setDropdownOpen(!isDropdownOpen);
@@ -188,6 +188,8 @@ const TeamPage = () => {
   const handleTeamNameChange = (event) => {
     setTeamName(event.target.value);
   };
+
+  // TODO: ADD state for if no team here. maybe a button to take you back to the lobby?
 
   return (
     <Container>
@@ -200,14 +202,14 @@ const TeamPage = () => {
                 variant="standard"
                 onChange={handleTeamNameChange}
                 InputProps={{
-                  endAdornment: (
-                    <EditIcon color="primary" style={{ cursor: 'pointer' }} />
-                  ),
+                  endAdornment: <EditIcon color="primary" style={{ cursor: "pointer" }} />,
                 }}
               />
               <ul>
                 {teammates.map((teammate, index) => (
-                  <li key={index}><UserName>{teammate}</UserName></li>
+                  <li key={index}>
+                    <UserName>{teammate}</UserName>
+                  </li>
                 ))}
               </ul>
             </TeamInfoContainer>
@@ -226,12 +228,16 @@ const TeamPage = () => {
                 <TableRow>
                   <EmojiCell>🕒</EmojiCell>
                   <TableCell>Latest Streak</TableCell>
-                  <TableCellR><b>{latestStreak}</b></TableCellR>
+                  <TableCellR>
+                    <b>{latestStreak}</b>
+                  </TableCellR>
                 </TableRow>
                 <TableRow>
                   <EmojiCell>🔥</EmojiCell>
                   <TableCell>Longest Streak</TableCell>
-                  <TableCellR><b>{longestStreak}</b></TableCellR>
+                  <TableCellR>
+                    <b>{longestStreak}</b>
+                  </TableCellR>
                 </TableRow>
                 <TableRow>
                   <EmojiCell>❓</EmojiCell>
@@ -246,12 +252,17 @@ const TeamPage = () => {
         <DropdownContainer>
           <DropdownHeader onClick={toggleDropdown}>
             Recent Problems
-            <DropdownIcon xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+            <DropdownIcon
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              width="24"
+              height="24"
+            >
               <path fill="none" d="M0 0h24v24H0z" />
               <path d="M7 10l5 5 5-5z" />
             </DropdownIcon>
           </DropdownHeader>
-          <DropdownContent style={{ display: isDropdownOpen ? 'block' : 'none' }}>
+          <DropdownContent style={{ display: isDropdownOpen ? "block" : "none" }}>
             <Table>
               <thead>
                 <TableRow>

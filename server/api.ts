@@ -29,6 +29,9 @@ router.post("/initsocket", (req, res) => {
 router.get(`/user`, teamCalls.loadMyUser);
 router.post(`/username`, teamCalls.setUserName);
 
+router.post(`/createTeam`, teamCalls.createTeam);
+router.post(`/joinTeam`, teamCalls.joinTeam);
+router.get(`/team`, teamCalls.getCurrentUserTeam);
 
 // anything else falls to this "not found" case
 router.all("*", (req, res) => {

@@ -20,6 +20,7 @@ import {
   SubproblemCategory,
 } from "../server/models/Problem";
 import { Team, TeamModel, TeamStatus } from "../server/models/Team";
+import { Types } from "mongoose";
 
 export {
   User,
@@ -40,7 +41,7 @@ export interface TypedRequestQuery<T extends Query> {
   user?: User;
 }
 
-export const NUM_PROBLEMS = 3; // for now
+export const NUM_PROBLEMS = 2; // for now
 
 export async function getUserActiveOrRecruitingTeam(userId: string) {
   const team = await TeamModel.findOne({
@@ -157,4 +158,39 @@ export type teamRequestBodyType = {
 
 export type teamResponseType = {
   team: Team;
+};
+
+export type UserInfo = {
+  name: string;
+  email: string;
+  _id: string;
+  isAdmin: boolean;
+};
+
+export type TeamWithInfo = {
+  name: string;
+  dateStarted?: Date;
+  dateEnded?: Date;
+  users: UserInfo[];
+  // problemAttempts: Types.ObjectId[]; // do this separately
+  status: TeamStatus;
+  code: string;
+  // for easier stats
+  longestStreak: number;
+  currentStreak: number;
+};
+
+export type teamWithInfoResponseType = {
+  teamInfo: {
+    name: string;
+    dateStarted?: Date;
+    dateEnded?: Date;
+    users: UserInfo[];
+    // problemAttempts: Types.ObjectId[]; // do this separately
+    status: TeamStatus;
+    code: string;
+    // for easier stats
+    longestStreak: number;
+    currentStreak: number;
+  } | null;
 };

@@ -15,7 +15,7 @@ import styled from 'styled-components';
 import { socket } from "../../client-socket";
 import { Box, Grid, CircularProgress, Button, TextField, Typography } from "@mui/material";
 import EditIcon from '@mui/icons-material/Edit';
-import EditNameModal from "../EditNameModal";
+import EditNameModal from "../modules/EditNameModal";
 import Sidebar from '../Sidebar';
 
 const Container = styled.div`
