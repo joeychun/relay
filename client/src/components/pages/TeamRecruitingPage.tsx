@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
-import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import EditIcon from "@mui/icons-material/Edit";
 import Sidebar from "../Sidebar";
@@ -10,13 +9,24 @@ import {
   NUM_PROBLEMS,
   Team,
   TeamWithInfo,
+  setTeamNameRequestBodyType,
   teamResponseType,
   teamWithInfoResponseType,
 } from "../../../../shared/apiTypes";
 import { Flex } from "rebass/styled-components";
-import { CircularProgress, Typography } from "@mui/material";
+import {
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Typography,
+  Button,
+} from "@mui/material";
+import copy from 'copy-to-clipboard';
 import { TeamStatus } from "../../../../server/models/Team";
-import { get } from "../../utilities";
+import { get, post } from "../../utilities";
+import EditValueModal from "../modules/EditValueModal";
 
 const Container = styled.div`
   display: flex;
@@ -117,6 +127,27 @@ const RedText = styled.div`
   }
 `;
 
+const Clickable = styled.div`
+  && {
+    display: inline-block;
+    &:hover {
+      cursor: pointer;
+    }
+    &:hover::after {
+      content: "Copy to Clipboard";
+      position: absolute;
+      left: 50%; /* Center horizontally */
+      transform: translate(35%, -80%);
+      background-color: rgba(0, 0, 0, 0.4);
+      color: white;
+      padding: 5px;
+      border-radius: 5px;
+      font-size: 0.8rem;
+      white-space: nowrap;
+    }
+  }
+`;
+
 const BulletPoint = styled.div`
   margin-left: 8px;
   padding-left: 8px;
@@ -151,8 +182,7 @@ const TeamRecruitingPage = (props: TeamRecruitingPageProps) => {
   // TODO (later): add a refresh of team data?
 
   const [showRedText, setShowRedText] = useState(false);
-  // NOTE: only use this for updating teamname
-  const [teamName, setTeamName] = useState("Team Name");
+  const [isEditTeamNameModalOpen, setIsEditTeamNameModalOpen] = useState(false);
 
   // load current team
   useEffect(() => {
@@ -172,10 +202,16 @@ const TeamRecruitingPage = (props: TeamRecruitingPageProps) => {
     setShowRedText(true);
   };
 
-  const handleTeamNameChange = (event) => {
-    setTeamName(event.target.value);
-    // TODO: add a function on the backend to update team name
-    // TODO: make update team name the same as update username, don't use styled
+  const handleSubmitNewTeamName = (name: string) => {
+    if (!userId || !teamInfo?._id) return Promise.resolve();
+    const body: setTeamNameRequestBodyType = {
+      name,
+      teamId: teamInfo._id,
+    };
+    console.log("Submitting new name:", name);
+    return post("/api/setTeamName", body).then((data: teamWithInfoResponseType) => {
+      setTeamInfo(data.teamInfo);
+    });
   };
 
   if (!userId) {
@@ -231,20 +267,29 @@ const TeamRecruitingPage = (props: TeamRecruitingPageProps) => {
         {showRedText && (
           <RedText>
             &nbsp;
-            <br /> &nbsp;
           </RedText>
         )}
         <InnerContainer>
           <TeamContainer>
             <TeamInfoContainer>
-              <EditableTeamName
+              {/* <EditableTeamName
                 value={teamInfo.name ?? "No name yet."}
                 variant="standard"
                 onChange={handleTeamNameChange}
                 InputProps={{
                   endAdornment: <EditIcon color="primary" style={{ cursor: "pointer" }} />,
                 }}
-              />
+              /> */}
+              <Flex sx={{ gap: 2 }}>
+                <Typography variant="h5">{teamInfo.name}</Typography>
+                <Button
+                  onClick={() => {
+                    setIsEditTeamNameModalOpen(true);
+                  }}
+                >
+                  <EditIcon color="primary" />
+                </Button>
+              </Flex>
               <ul>
                 {teamInfo.users.map((teammate, index) => (
                   <li key={index}>
@@ -276,11 +321,22 @@ const TeamRecruitingPage = (props: TeamRecruitingPageProps) => {
         </InnerContainer>
         {showRedText && (
           <RedText>
-            Share Team Code: {teamInfo.code}
+            Share Team Code:&nbsp;
+            <Clickable onClick={() => copy(teamInfo.code)}><u>{teamInfo.code}</u></Clickable>
           </RedText>
         )}
       </Content>
       <Sidebar />
+      <EditValueModal
+        curVal={teamInfo.name}
+        title="Edit team name"
+        maxLength={16}
+        onClose={() => {
+          setIsEditTeamNameModalOpen(false);
+        }}
+        open={isEditTeamNameModalOpen}
+        handleEditVal={handleSubmitNewTeamName}
+      />
     </Container>
   );
 };

@@ -138,6 +138,7 @@ export type setUserNameRequestBodyType = {
 
 export type setTeamNameRequestBodyType = {
   name: string;
+  teamId: string;
 };
 
 export type createTeamRequestBodyType = {
@@ -172,6 +173,7 @@ export type UserInfo = {
 };
 
 export type TeamWithInfo = {
+  _id: string;
   name: string;
   dateStarted?: Date;
   dateEnded?: Date;
@@ -185,16 +187,5 @@ export type TeamWithInfo = {
 };
 
 export type teamWithInfoResponseType = {
-  teamInfo: {
-    name: string;
-    dateStarted?: Date;
-    dateEnded?: Date;
-    users: UserInfo[];
-    // problemAttempts: Types.ObjectId[]; // do this separately
-    status: TeamStatus;
-    code: string;
-    // for easier stats
-    longestStreak: number;
-    currentStreak: number;
-  } | null;
+  teamInfo: TeamWithInfo | null;
 };

@@ -10,7 +10,7 @@ import {
 } from "../../../../shared/apiTypes";
 import { Flex, Text } from "rebass/styled-components";
 import { Box, Grid, CircularProgress, Button, TextField, Typography } from "@mui/material";
-import EditNameModal from "../modules/EditNameModal";
+import EditValueModal from "../modules/EditValueModal";
 import Sidebar from "../Sidebar";
 
 type ProfilePageProps = {
@@ -20,7 +20,7 @@ type ProfilePageProps = {
 const ProfilePage = (props: ProfilePageProps) => {
   const userId = props.userId;
   const [username, setUsername] = useState("");
-  const [isEditNameModalOpen, setIsEditNameModalOpen] = useState(false);
+  const [isEditValueModalOpen, setIsEditValueModalOpen] = useState(false);
   const [inputtedUsername, setInputtedUsername] = useState<string>("");
 
   const editName = (name: string) => {
@@ -72,19 +72,21 @@ const ProfilePage = (props: ProfilePageProps) => {
             color: "black",
           }}
           onClick={() => {
-            setIsEditNameModalOpen(true);
+            setIsEditValueModalOpen(true);
           }}
         >
           Edit username
         </Button>
       </Box>
-      <EditNameModal
-        curUsername={username}
+      <EditValueModal
+        curVal={username}
+        title="Edit username"
+        maxLength={16}
         onClose={() => {
-          setIsEditNameModalOpen(false);
+          setIsEditValueModalOpen(false);
         }}
-        open={isEditNameModalOpen}
-        handleEditName={editName}
+        open={isEditValueModalOpen}
+        handleEditVal={editName}
       />
       <Sidebar />
     </Flex>

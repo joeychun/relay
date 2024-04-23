@@ -12,6 +12,7 @@ import {
   getUserTeams,
   joinTeamRequestBodyType,
   lock,
+  setTeamNameRequestBodyType,
   setUserNameRequestBodyType,
   submitSubproblemAttemptRequestBodyType,
   subproblemAttemptResponseType,
@@ -25,20 +26,10 @@ import { Team, TeamModel, TeamStatus } from "../models/Team";
 import { ProblemStatus, RelayProblemAttemptModel, RelayProblemModel } from "../models/Problem";
 import { createRelayProblemAttempt } from "./adminCalls";
 
-const getCurrentUserTeam = async (
-  req: TypedRequestQuery<{}>,
-  res // TeamWithInfo
-) => {
-  // return the active or recruiting team
-  const myUserId: string = req.user?._id as string;
-  const team = await getUserActiveOrRecruitingTeam(myUserId);
-  if (!team) {
-    return res.status(200).json({ teamInfo: null });
-  }
-  const teamWithUsers = await getTeamWithUsers(team.id);
-
-  return res.status(200).json({
+function formatTeamWithInfo(teamWithUsers) {
+  return {
     teamInfo: {
+      _id: teamWithUsers._id,
       name: teamWithUsers.name,
       dateStarted: teamWithUsers.dateStarted,
       dateEnded: teamWithUsers.dateEnded,
@@ -53,7 +44,22 @@ const getCurrentUserTeam = async (
       longestStreak: teamWithUsers.longestStreak,
       currentStreak: teamWithUsers.currentStreak,
     },
-  });
+  };
+}
+
+const getCurrentUserTeam = async (
+  req: TypedRequestQuery<{}>,
+  res // TeamWithInfo
+) => {
+  // return the active or recruiting team
+  const myUserId: string = req.user?._id as string;
+  const team = await getUserActiveOrRecruitingTeam(myUserId);
+  if (!team) {
+    return res.status(200).json({ teamInfo: null });
+  }
+  const teamWithUsers = await getTeamWithUsers(team.id);
+
+  return res.status(200).json(formatTeamWithInfo(teamWithUsers));
 };
 
 const loadMyUser = async (
@@ -81,21 +87,25 @@ const setUserName = async (
   res.status(200).json({ name: user.name });
 };
 
-// // BUGGED
-// const setTeamName = async (
-//   req: TypedRequestBody<setTeamNameRequestBodyType>,
-//   res // Team
-// ) => {
-//   const myUserId: string = req.user?._id as string;
+const setTeamName = async (
+  req: TypedRequestBody<setTeamNameRequestBodyType>,
+  res // Team
+) => {
+  const myUserId: string = req.user?._id as string;
 
-//   const user = await getMyUser(myUserId);
-//   if (req.body.name.length == 0) {
-//     throw new Error("username must be at least 1 character.");
-//   }
-//   user.name = req.body.name;
-//   const savedUser = await user.save();
-//   res.status(200).json({ name: user.name });
-// };
+  // const user = await getMyUser(myUserId);
+  if (req.body.name.length == 0) {
+    return res.status(400).json({ error: "Team name must be at least 1 character." });
+  }
+  const team = await getTeamWithUsers(req.body.teamId);
+
+  if (!team) {
+    return res.status(404).json({ error: "Team not found" });
+  }
+  team.name = req.body.name;
+  const savedTeam = await team.save();
+  res.status(200).json(formatTeamWithInfo(savedTeam));
+};
 
 function generateRandomCode() {
   const randomCode = Math.floor(Math.random() * 9000) + 1000;
@@ -228,7 +238,7 @@ const getTeamInfo = async (
 export default {
   loadMyUser,
   setUserName,
-  // setTeamName,
+  setTeamName,
   getCurrentUserTeam,
   createTeam,
   joinTeam,

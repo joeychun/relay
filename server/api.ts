@@ -32,6 +32,7 @@ router.post(`/username`, teamCalls.setUserName);
 router.post(`/createTeam`, teamCalls.createTeam);
 router.post(`/joinTeam`, teamCalls.joinTeam);
 router.get(`/team`, teamCalls.getCurrentUserTeam);
+router.post(`/setTeamName`, teamCalls.setTeamName);
 
 // anything else falls to this "not found" case
 router.all("*", (req, res) => {
