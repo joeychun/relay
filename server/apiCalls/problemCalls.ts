@@ -72,10 +72,10 @@ const submitSubproblemAttempt = async (
   const myUserId: string = req.user?._id as string;
   const subproblemAttempt = await SubproblemAttemptModel.findById(req.body.subproblemAttemptId);
   if (!subproblemAttempt) {
-    throw new Error("No subproblem attempt found.");
+    return res.status(404).json({ error: "No subproblem attempt found." });
   }
   if (subproblemAttempt.assignedUser._id.toString() != myUserId) {
-    throw new Error("This problem has not been assigned to you.");
+    return res.status(400).json({ error: "This problem has not been assigned to you." });
   }
   const subproblem = (await SubproblemModel.findById(subproblemAttempt.subproblem)) as Subproblem;
   // TODO: will this lock create an issue?
@@ -89,7 +89,7 @@ const submitSubproblemAttempt = async (
     ).populate<{ subproblemAttempts: SubproblemAttempt[] }>("subproblemAttempts");
     if (!parentProblemAttempt) {
       // should not happen
-      throw new Error("no parent problem found");
+      return res.status(404).json({ error: "No parent problem found" });
     }
 
     const parentRelayProblem = await RelayProblemModel.findById(
@@ -97,7 +97,7 @@ const submitSubproblemAttempt = async (
     ).populate<{ subproblems: Subproblem[] }>("subproblems");
     if (!parentRelayProblem) {
       // should not happen
-      throw new Error("no parent problem found");
+      return res.status(404).json({ error: "No parent problem found" });
     }
 
     // TODO: LATER EXTENSION - show progress of where your teammates are.

@@ -80,7 +80,7 @@ const setUserName = async (
 
   const user = await getMyUser(myUserId);
   if (req.body.name.length == 0) {
-    throw new Error("username must be at least 1 character.");
+    return res.status(400).json({ error: "Username must be at least 1 character." });
   }
   user.name = req.body.name;
   const savedUser = await user.save();
@@ -120,14 +120,22 @@ const createTeam = async (
 
   const activeTeam = await getUserActiveOrRecruitingTeam(myUserId);
   if (!!activeTeam) {
-    throw new Error("Already have an active or recruiting team.");
+    return res.status(400).json({ error: "Already have an active or recruiting team." });
   }
 
   await lock.acquire([myUserId], async () => {
     // Create a new converted game with the player who joined
+    let code;
+    let teamWithCode;
+
+    do {
+      code = generateRandomCode(); // Generate a new code
+      teamWithCode = await TeamModel.findOne({ code }); // Check if the code already exists
+    } while (teamWithCode);
+
     const newTeam = new TeamModel({
       name: req.body.name,
-      code: generateRandomCode(),
+      code: code,
     });
     newTeam.users.push(new Types.ObjectId(myUserId));
     const savedTeam = await newTeam.save();
@@ -142,7 +150,6 @@ const joinTeam = async (req: TypedRequestBody<joinTeamRequestBodyType>, res) => 
     users: User[];
   }>("users");
   if (!team) {
-    // throw new Error(`Team with code ${req.body.code} not found`);
     return res.status(404).json({ error: `Team with code ${req.body.code} not found` });
   }
   // too full
@@ -167,7 +174,11 @@ const joinTeam = async (req: TypedRequestBody<joinTeamRequestBodyType>, res) => 
   const savedTeam = await team.save();
   if (savedTeam.users.length == NUM_PROBLEMS) {
     // activate and creates a new problem for the current problem
-    await activateTeam(savedTeam._id);
+    try {
+      await activateTeam(savedTeam._id);
+    } catch (e) {
+      return res.status(400).json({ error: e });
+    }
   }
 
   console.log(`Team with id ${savedTeam._id} joined`);
@@ -209,7 +220,7 @@ const endTeam = async (
   const myUserId: string = req.user?._id as string;
   const team = await getTeamWithUsers(req.body.teamId);
   if (team.status == TeamStatus.Ended) {
-    throw new Error("Team has already been ended.");
+    return res.status(400).json({ error: "Team has already been ended." });
   }
   team.dateEnded = new Date();
   team.status = TeamStatus.Ended;

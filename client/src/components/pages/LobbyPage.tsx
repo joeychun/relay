@@ -25,6 +25,7 @@ import {
   teamWithInfoResponseType,
   userDataResponseType,
 } from "../../../../shared/apiTypes";
+import { TeamStatus } from "../../../../server/models/Team";
 
 const StyledButton = styled(Button)`
   && {
@@ -44,7 +45,7 @@ const StyledButton = styled(Button)`
 
 const StyledButton2 = styled(Button)`
   && {
-    width: 30%;
+    width: 35%;
     height: 50px;
     margin-top: 16px;
     margin-bottom: 16px;
@@ -232,20 +233,35 @@ const LobbyPage = (props: LobbyPageProps) => {
     // TODO: Better styling for state of lobby page if you're already part of a team."
     // add button to problem page?
     // improve msg
-    return (
-      <Flex backgroundColor="#faf9f6" color="black" flexDirection="column"> {/* Changed flexDirection to column */}
-        <Flex justifyContent="center" alignItems="center" height="100vh" width="100%"> {/* Decreased height to 80vh */}
-          <Flex flexDirection="column" alignItems="center"> {/* Changed flexDirection to column */}
-            <Typography variant="h5">You're already part of a team. Head over to start playing!</Typography>
-            {/* Add button to problem page */}
-            <StyledButton2 variant="contained" color="primary" onClick={() => window.location.href = "/problem"}>
-              Problem Page
-            </StyledButton2>
+    if (teamInfo.status === TeamStatus.Active) {
+      return (
+        <Flex backgroundColor="#faf9f6" color="black" flexDirection="column"> {/* Changed flexDirection to column */}
+          <Flex justifyContent="center" alignItems="center" height="100vh" width="100%"> {/* Decreased height to 80vh */}
+            <Flex flexDirection="column" alignItems="center"> {/* Changed flexDirection to column */}
+              <Typography variant="h5">You're already part of a team. Head over to start playing!</Typography>
+              <StyledButton2 variant="contained" color="primary" onClick={() => window.location.href = "/problem"}>
+                Problem Page
+              </StyledButton2>
+            </Flex>
           </Flex>
+          <Sidebar />
         </Flex>
-        <Sidebar />
-      </Flex>
-    );
+      );
+    } else {
+      return (
+        <Flex backgroundColor="#faf9f6" color="black" flexDirection="column"> {/* Changed flexDirection to column */}
+          <Flex justifyContent="center" alignItems="center" height="100vh" width="100%"> {/* Decreased height to 80vh */}
+            <Flex flexDirection="column" alignItems="center"> {/* Changed flexDirection to column */}
+              <Typography variant="h5">You're already part of a team. Continue Recruiting!</Typography>
+              <StyledButton2 variant="contained" color="primary" onClick={() => window.location.href = "/team-recruit"}>
+                Recruiting Page
+              </StyledButton2>
+            </Flex>
+          </Flex>
+          <Sidebar />
+        </Flex>
+      );
+    }
   }
   return (
     <Flex backgroundColor="#faf9f6" color="black">

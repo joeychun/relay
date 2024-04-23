@@ -45,10 +45,14 @@ const createProblem = async (
   res // problemResponseType
 ) => {
   const myUserId: string = req.user?._id as string;
-  await assertUserIsAdmin(myUserId);
+  try {
+    await assertUserIsAdmin(myUserId);
+  } catch (e) {
+    return res.status(400).json({ error: e });
+  }
 
   if (req.body.questions.length != NUM_PROBLEMS || req.body.answers.length != NUM_PROBLEMS) {
-    throw new Error("incorrect number of questions for new problem");
+    return res.status(400).json({ error: "incorrect number of questions for new problem" });
   }
 
   let subproblems: Subproblem[] = [];
@@ -182,7 +186,11 @@ const releaseProblem = async (
   res // problemResponseType
 ) => {
   const myUserId: string = req.user?._id as string;
-  await assertUserIsAdmin(myUserId);
+  try {
+    await assertUserIsAdmin(myUserId);
+  } catch (e) {
+    return res.status(400).json({ error: e });
+  }
 
   const teams: Team[] = await getAllActiveTeams();
 
@@ -193,14 +201,14 @@ const releaseProblem = async (
     status: ProblemStatus.Active,
   });
   if (!!activeProblem) {
-    throw new Error("Active problem already exists.");
+    return res.status(400).json({ error: "Active problem already exists." });
   }
   Promise.all(teams.map((team) => createRelayProblemAttempt(team.id, req.body.problemId)))
     .then((results) => {
       console.log("Success", results);
     })
     .catch((error) => {
-      throw new Error("Error releasing problem");
+      return res.status(400).json({ error: error });
     });
   thisProblem.status = ProblemStatus.Active;
   const releasedProblem = await thisProblem.save();
@@ -215,11 +223,15 @@ const closeProblem = async (
   res // problemResponseType
 ) => {
   const myUserId: string = req.user?._id as string;
-  await assertUserIsAdmin(myUserId);
+  try {
+    await assertUserIsAdmin(myUserId);
+  } catch (e) {
+    return res.status(400).json({ error: e });
+  }
 
   const problem = await RelayProblemModel.findById(req.body.problemId);
   if (!problem) {
-    throw new Error("Problem not found");
+    return res.status(400).json({ error: "Problem not found" });
   }
   problem.status = ProblemStatus.Revealed;
   const savedProblem = await problem.save();
@@ -234,7 +246,7 @@ const closeProblem = async (
       console.log("Success", results);
     })
     .catch((error) => {
-      throw new Error("Error grading problem");
+      return res.status(400).json({ error: error });
     });
 
   console.log(`Problem with id ${req.body.problemId} revealed`);
@@ -246,7 +258,11 @@ const loadRecentProblems = async (
   res // problemResponseType
 ) => {
   const myUserId: string = req.user?._id as string;
-  await assertUserIsAdmin(myUserId);
+  try {
+    await assertUserIsAdmin(myUserId);
+  } catch (e) {
+    return res.status(400).json({ error: e });
+  }
 
   const problems = await RelayProblemModel.find({})
     .sort({ date: -1 }) // sort by date in desc order
