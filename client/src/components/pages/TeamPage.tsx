@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
+import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import EditIcon from "@mui/icons-material/Edit";
 import Sidebar from "../Sidebar";
@@ -11,6 +12,7 @@ import {
   teamWithInfoResponseType,
 } from "../../../../shared/apiTypes";
 import { ConstructionOutlined } from "@mui/icons-material";
+import { Flex } from "rebass/styled-components";
 import { TeamStatus } from "../../../../server/models/Team";
 import { CircularProgress, Typography } from "@mui/material";
 import { get } from "../../utilities";
@@ -178,6 +180,24 @@ const DropdownOpen = styled(DropdownContent)`
   display: block;
 `;
 
+const StyledButton2 = styled(Button)`
+  && {
+    width: 35%;
+    height: 50px;
+    margin-top: 16px;
+    margin-bottom: 16px;
+    font-size: 1rem;
+    background-color: #ffd166;
+    color: #000000;
+    border-radius: 10px;
+    box-shadow: 0px 3px 5px rgba(0, 0, 0, 0.2);
+    &:hover {
+      background-color: #ffd700;
+    }
+  }
+`;
+
+
 type TeamRecruitingPageProps = {
   userId?: string;
 };
@@ -222,11 +242,45 @@ const TeamPage = (props: TeamRecruitingPageProps) => {
     setTeamName(event.target.value);
   };
 
+  if (!userId) {
+    window.location.href = "/login";
+  }
+
+  if (!teamIsLoaded) {
+    return <CircularProgress />;
+  }
+
   // TODO: ADD state for if no team here. maybe a button to take you back to the lobby?
   if (!teamInfo) {
-    console.log("No Team"); // TODO
-  } else if (teamInfo.status === TeamStatus.Recruiting) {
-    console.log("in recruiting state...")
+    return (
+      <Flex backgroundColor="#faf9f6" color="black" flexDirection="column"> {/* Changed flexDirection to column */}
+        <Flex justifyContent="center" alignItems="center" height="100vh" width="100%"> {/* Decreased height to 80vh */}
+          <Flex flexDirection="column" alignItems="center"> {/* Changed flexDirection to column */}
+            <Typography variant="h5">You don't have a team. Go back to lobby:</Typography>
+            <StyledButton2 variant="contained" color="primary" onClick={() => window.location.href = "/lobby"}>
+              Lobby Page
+              </StyledButton2>
+          </Flex>
+        </Flex>
+        <Sidebar />
+      </Flex>
+    );
+  }
+
+  if (teamInfo.status === TeamStatus.Recruiting) {
+    return (
+      <Flex backgroundColor="#faf9f6" color="black" flexDirection="column"> {/* Changed flexDirection to column */}
+        <Flex justifyContent="center" alignItems="center" height="100vh" width="100%"> {/* Decreased height to 80vh */}
+          <Flex flexDirection="column" alignItems="center"> {/* Changed flexDirection to column */}
+            <Typography variant="h5">Your team is under recruiting! Get a full team first:</Typography>
+            <StyledButton2 variant="contained" color="primary" onClick={() => window.location.href = "/team-recruit"}>
+              Recruiting Page
+            </StyledButton2>
+          </Flex>
+        </Flex>
+        <Sidebar />
+      </Flex>
+    );
   }
 
   return (
