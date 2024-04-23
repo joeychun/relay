@@ -28,7 +28,6 @@ import {
 const App = () => {
   const [userId, setUserId] = useState<string | undefined>(undefined);
   const [loginChecked, setLoginChecked] = useState<boolean>(false);
-  const [teamInfo, setTeamInfo] = useState<TeamWithInfo | null>(null);
 
   useEffect(() => {
     get("/api/whoami")
@@ -67,24 +66,9 @@ const App = () => {
     image: "https://mathworld.wolfram.com/images/eps-svg/SimsonLine_1000.svg",
   };
 
-  // load current team
-  useEffect(() => {
-    try {
-      if (!!userId) {
-        get(`/api/team`, {}).then((res: teamWithInfoResponseType) => {
-          setTeamInfo(res.teamInfo);
-        });
-      }
-    } catch (error) {
-      console.error("Error fetching team:", error);
-    }
-  }, [userId]);
-
   if (!loginChecked) {
     return <CircularProgress />;
   }
-
-  console.log("team info", teamInfo);
 
   // NOTE:
   // All the pages need to have the props extended via RouteComponentProps for @reach/router to work properly. Please use the Skeleton as an example.
@@ -104,14 +88,11 @@ const App = () => {
             <LoginPage handleLogin={handleLogin} handleLogout={handleLogout} userId={userId} />
           }
         />
-        <Route path="/lobby" element={<Lobby userId={userId} teamInfo={teamInfo} />} />
+        <Route path="/lobby" element={<Lobby userId={userId} />} />
         <Route path="/profile" element={<Profile userId={userId} />} />
         <Route path="/admin" element={<Admin />} />
-        <Route path="/team" element={<TeamPage userId={userId} teamInfo={teamInfo} />} />
-        <Route
-          path="/team-recruit"
-          element={<TeamRecruitingPage userId={userId} teamInfo={teamInfo} />}
-        />
+        <Route path="/team" element={<TeamPage userId={userId} />} />
+        <Route path="/team-recruit" element={<TeamRecruitingPage userId={userId} />} />
         <Route
           path="/problem"
           element={<Problem problemText={example.problemText} image={null} prevAnswer={3} />}

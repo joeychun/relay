@@ -6,10 +6,17 @@ import EditIcon from "@mui/icons-material/Edit";
 import Sidebar from "../Sidebar";
 import AddIcon from "@mui/icons-material/AddToPhotos";
 import ConnectIcon from "@mui/icons-material/ConnectWithoutContact";
-import { NUM_PROBLEMS, Team, TeamWithInfo, teamResponseType } from "../../../../shared/apiTypes";
+import {
+  NUM_PROBLEMS,
+  Team,
+  TeamWithInfo,
+  teamResponseType,
+  teamWithInfoResponseType,
+} from "../../../../shared/apiTypes";
 import { Flex } from "rebass/styled-components";
-import { Typography } from "@mui/material";
+import { CircularProgress, Typography } from "@mui/material";
 import { TeamStatus } from "../../../../server/models/Team";
+import { get } from "../../utilities";
 
 const Container = styled.div`
   display: flex;
@@ -117,17 +124,32 @@ const BulletPoint = styled.div`
 
 type TeamRecruitingPageProps = {
   userId?: string;
-  teamInfo: TeamWithInfo | null;
 };
 
 const TeamRecruitingPage = (props: TeamRecruitingPageProps) => {
   const userId = props.userId;
   const [errorMsg, setErrorMsg] = useState("");
-  const teamInfo = props.teamInfo;
+  const [teamInfo, setTeamInfo] = useState<TeamWithInfo | null>(null);
+  const [teamIsLoaded, setTeamIsLoaded] = useState<boolean>(false);
   // TODO (later): add a refresh of team data?
 
   const [showRedText, setShowRedText] = useState(false);
+  // NOTE: only use this for updating teamname
   const [teamName, setTeamName] = useState("Team Name");
+
+  // load current team
+  useEffect(() => {
+    try {
+      if (!!userId) {
+        get(`/api/team`, {}).then((res: teamWithInfoResponseType) => {
+          setTeamInfo(res.teamInfo);
+          setTeamIsLoaded(true);
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching team:", error);
+    }
+  }, [userId]);
 
   const handleRecruitButtonClick = () => {
     setShowRedText(true);
@@ -142,6 +164,11 @@ const TeamRecruitingPage = (props: TeamRecruitingPageProps) => {
   if (!userId) {
     window.location.href = "/login";
   }
+
+  if (!teamIsLoaded) {
+    return <CircularProgress />;
+  }
+
   if (!teamInfo) {
     // TODO: style this better
     // TODO: add button to go to lobby page

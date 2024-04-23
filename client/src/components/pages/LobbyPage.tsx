@@ -13,6 +13,7 @@ import {
   TextField,
   DialogActions,
   Typography,
+  CircularProgress
 } from "@mui/material";
 import { get, post } from "../../utilities";
 import {
@@ -21,6 +22,7 @@ import {
   createTeamRequestBodyType,
   joinTeamRequestBodyType,
   teamResponseType,
+  teamWithInfoResponseType,
   userDataResponseType,
 } from "../../../../shared/apiTypes";
 
@@ -143,14 +145,28 @@ const JoinOrCreateTeamModal = (props: JoinOrCreateTeamProps) => {
 
 type LobbyPageProps = {
   userId?: string;
-  teamInfo: TeamWithInfo | null;
 };
 
 const LobbyPage = (props: LobbyPageProps) => {
   const userId = props.userId;
   const [viewState, setViewState] = useState<"join" | "create" | null>(null);
   const [errorMsg, setErrorMsg] = useState("");
-  const teamInfo = props.teamInfo;
+  const [teamInfo, setTeamInfo] = useState<TeamWithInfo | null>(null);
+  const [teamIsLoaded, setTeamIsLoaded] = useState<boolean>(false);
+
+  // load current team
+  useEffect(() => {
+    try {
+      if (!!userId) {
+        get(`/api/team`, {}).then((res: teamWithInfoResponseType) => {
+          setTeamInfo(res.teamInfo);
+          setTeamIsLoaded(true);
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching team:", error);
+    }
+  }, [userId]);
 
   // TODO: right now, errors crash the api but should be returning 404/400 instead of throwing errors
 
@@ -188,6 +204,11 @@ const LobbyPage = (props: LobbyPageProps) => {
   if (!userId) {
     window.location.href = "/login";
   }
+
+  if (!teamIsLoaded) {
+    return <CircularProgress />;
+  }
+
   console.log("TEAM INFO IN LOBBY", teamInfo);
   if (!!teamInfo) {
     // home icon on sidebar should go to /lobby if you don't have a team, and team-recruit if you do and it's recruiting, and /team if you do and it's active

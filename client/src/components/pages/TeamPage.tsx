@@ -1,11 +1,19 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import TextField from "@mui/material/TextField";
 import EditIcon from "@mui/icons-material/Edit";
 import Sidebar from "../Sidebar";
-import { NUM_PROBLEMS, Team, TeamWithInfo, teamResponseType } from "../../../../shared/apiTypes";
+import {
+  NUM_PROBLEMS,
+  Team,
+  TeamWithInfo,
+  teamResponseType,
+  teamWithInfoResponseType,
+} from "../../../../shared/apiTypes";
 import { ConstructionOutlined } from "@mui/icons-material";
 import { TeamStatus } from "../../../../server/models/Team";
+import { CircularProgress, Typography } from "@mui/material";
+import { get } from "../../utilities";
 
 const Container = styled.div`
   display: flex;
@@ -172,12 +180,12 @@ const DropdownOpen = styled(DropdownContent)`
 
 type TeamRecruitingPageProps = {
   userId?: string;
-  teamInfo: TeamWithInfo | null;
 };
 
 const TeamPage = (props: TeamRecruitingPageProps) => {
   const userId = props.userId;
-  const teamInfo = props.teamInfo;
+  const [teamInfo, setTeamInfo] = useState<TeamWithInfo | null>(null);
+  const [teamIsLoaded, setTeamIsLoaded] = useState<boolean>(false);
 
   const teammates = ["User 1", "User 2", "User 3"];
   const latestStreak = 5;
@@ -191,6 +199,20 @@ const TeamPage = (props: TeamRecruitingPageProps) => {
 
   const [isDropdownOpen, setDropdownOpen] = useState(false);
   const [teamName, setTeamName] = useState("Team Name");
+
+  // load current team
+  useEffect(() => {
+    try {
+      if (!!userId) {
+        get(`/api/team`, {}).then((res: teamWithInfoResponseType) => {
+          setTeamInfo(res.teamInfo);
+          setTeamIsLoaded(true);
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching team:", error);
+    }
+  }, [userId]);
 
   const toggleDropdown = () => {
     setDropdownOpen(!isDropdownOpen);
