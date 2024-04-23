@@ -3,6 +3,9 @@ import styled from "styled-components";
 import TextField from "@mui/material/TextField";
 import EditIcon from "@mui/icons-material/Edit";
 import Sidebar from "../Sidebar";
+import { NUM_PROBLEMS, Team, TeamWithInfo, teamResponseType } from "../../../../shared/apiTypes";
+import { ConstructionOutlined } from "@mui/icons-material";
+import { TeamStatus } from "../../../../server/models/Team";
 
 const Container = styled.div`
   display: flex;
@@ -167,7 +170,15 @@ const DropdownOpen = styled(DropdownContent)`
   display: block;
 `;
 
-const TeamPage = () => {
+type TeamRecruitingPageProps = {
+  userId?: string;
+  teamInfo: TeamWithInfo | null;
+};
+
+const TeamPage = (props: TeamRecruitingPageProps) => {
+  const userId = props.userId;
+  const teamInfo = props.teamInfo;
+
   const teammates = ["User 1", "User 2", "User 3"];
   const latestStreak = 5;
   const longestStreak = 8;
@@ -190,6 +201,11 @@ const TeamPage = () => {
   };
 
   // TODO: ADD state for if no team here. maybe a button to take you back to the lobby?
+  if (!teamInfo) {
+    console.log("No Team"); // TODO
+  } else if (teamInfo.status === TeamStatus.Recruiting) {
+    console.log("in recruiting state...")
+  }
 
   return (
     <Container>

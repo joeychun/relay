@@ -81,6 +81,22 @@ const setUserName = async (
   res.status(200).json({ name: user.name });
 };
 
+// // BUGGED
+// const setTeamName = async (
+//   req: TypedRequestBody<setTeamNameRequestBodyType>,
+//   res // Team
+// ) => {
+//   const myUserId: string = req.user?._id as string;
+
+//   const user = await getMyUser(myUserId);
+//   if (req.body.name.length == 0) {
+//     throw new Error("username must be at least 1 character.");
+//   }
+//   user.name = req.body.name;
+//   const savedUser = await user.save();
+//   res.status(200).json({ name: user.name });
+// };
+
 function generateRandomCode() {
   const randomCode = Math.floor(Math.random() * 9000) + 1000;
   return randomCode.toString();
@@ -116,22 +132,23 @@ const joinTeam = async (req: TypedRequestBody<joinTeamRequestBodyType>, res) => 
     users: User[];
   }>("users");
   if (!team) {
-    throw new Error(`Team with code ${req.body.code} not found`);
+    // throw new Error(`Team with code ${req.body.code} not found`);
+    return res.status(404).json({ error: `Team with code ${req.body.code} not found` });
   }
   // too full
   // FOR NOW, EACH TEAM MUST HAVE THREE PEOPLE
   if (team.users.length == NUM_PROBLEMS) {
-    throw new Error("Team is full already.");
+    return res.status(403).json({ error: "Team is full already." });
   }
   // not in recruiting stage
   if (team.status != TeamStatus.Recruiting) {
-    throw new Error("Team is not accepting new members.");
+    return res.status(403).json({ error: "Team is not accepting new members." });
   }
 
   // already has a team
   const activeTeam = await getUserActiveOrRecruitingTeam(myUserId);
   if (!!activeTeam) {
-    throw new Error("Already have an active or recruiting team.");
+    return res.status(403).json({ error: "Already have an active or recruiting team." });
   }
 
   const myUser = await getMyUser(myUserId);
@@ -211,6 +228,7 @@ const getTeamInfo = async (
 export default {
   loadMyUser,
   setUserName,
+  // setTeamName,
   getCurrentUserTeam,
   createTeam,
   joinTeam,

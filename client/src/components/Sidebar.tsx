@@ -112,6 +112,7 @@ import GroupAddIcon from '@mui/icons-material/GroupAdd';
 import TrophyIcon from '@mui/icons-material/EmojiEvents';
 import QuestionMarkIcon from '@mui/icons-material/HelpOutline';
 import HomeIcon from '@mui/icons-material/Home';
+import { Flex } from 'rebass/styled-components';
 
 const drawerWidth = 140;
 
@@ -125,9 +126,15 @@ const StyledDrawer = styled(Drawer)(({ theme }) => ({
   },
 }));
 
-const InstructionsContainer = styled('div')({
+const ButtonsContainer = styled(Flex)({
+  flexDirection: 'column',
+});
+
+const InstructionsContainer = styled(Flex)({
   position: 'relative',
-  display: 'inline-block',
+  display: 'block', // Change display to block
+  textAlign: 'center', // Center the icon horizontally
+  marginTop: 'auto', // Push the icon to the bottom
 });
 
 const Instructions = styled('div')({
@@ -155,6 +162,11 @@ const Sidebar = () => {
     window.location.href = '/team';
   };
 
+  const handleGroupAddClick = () => {
+    // Redirect to '/profile' page
+    window.location.href = '/team-recruit';
+  };
+
   const handleHomeClick = () => {
     // Redirect to '/lobby' page
     window.location.href = '/lobby';
@@ -173,27 +185,30 @@ const Sidebar = () => {
   return (
     <>
       <StyledDrawer variant="permanent" anchor="right">
-        <div style={{ width: drawerWidth }}>
-          <Button onClick={handleHomeClick}>
-            <HomeIcon sx={{ fontSize: 50, margin: '20px auto', display: 'block' }} />
-          </Button>
-          <br></br>
-          <Button onClick={handleAccountClick}>
-            <AccountCircleIcon sx={{ fontSize: 50, margin: '20px auto', display: 'block' }} />
-          </Button>
-          <br></br>
-          <Button onClick={handleTrophyClick}>
-            <TrophyIcon sx={{ fontSize: 50, margin: '20px auto', display: 'block' }} />
-          </Button>
-          <div style={{ flexGrow: 1 }}></div>
-          <InstructionsContainer>
+        <Flex flexDirection="column" style={{ width: drawerWidth }}>
+          <ButtonsContainer>
+            <Button onClick={handleHomeClick}>
+              <HomeIcon sx={{ color: 'black', fontSize: 50, width: "100%", margin: '20px auto', display: 'block' }} />
+            </Button>
+            <Button onClick={handleAccountClick}>
+              <AccountCircleIcon sx={{ color: 'black', fontSize: 50, margin: '20px auto', display: 'block' }} />
+            </Button>
+            <Button onClick={handleGroupAddClick}>
+              <GroupAddIcon sx={{ color: 'black', fontSize: 50, margin: '20px auto', display: 'block' }} />
+            </Button>
+            <Button onClick={handleTrophyClick}>
+              <TrophyIcon sx={{ color: 'black', fontSize: 50, margin: '20px auto', display: 'block' }} />
+            </Button>
+          </ButtonsContainer>
+          {/* <div style={{ flexGrow: 1, marginBottom: "auto" }}></div> */}
+          <Flex sx={{ display: 'block', marginTop: 'auto' }}>
             <QuestionMarkIcon
               sx={{ fontSize: 50, margin: '20px auto', display: 'block', cursor: 'help' }}
               onMouseEnter={handleQuestionMarkHover}
               onMouseLeave={handleQuestionMarkLeave}
             />
-          </InstructionsContainer>
-        </div>
+          </Flex>
+        </Flex>
       </StyledDrawer>
       <Instructions style={{ display: showInstructions ? 'block' : 'none' }}>
         This is where you can find instructions. TODO

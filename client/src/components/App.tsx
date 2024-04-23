@@ -107,7 +107,7 @@ const App = () => {
         <Route path="/lobby" element={<Lobby userId={userId} teamInfo={teamInfo} />} />
         <Route path="/profile" element={<Profile userId={userId} />} />
         <Route path="/admin" element={<Admin />} />
-        <Route path="/team" element={<TeamPage />} />
+        <Route path="/team" element={<TeamPage userId={userId} teamInfo={teamInfo} />} />
         <Route
           path="/team-recruit"
           element={<TeamRecruitingPage userId={userId} teamInfo={teamInfo} />}

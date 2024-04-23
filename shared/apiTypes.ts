@@ -136,6 +136,10 @@ export type setUserNameRequestBodyType = {
   name: string;
 };
 
+export type setTeamNameRequestBodyType = {
+  name: string;
+};
+
 export type createTeamRequestBodyType = {
   name: string;
 };

@@ -92,6 +92,10 @@ const CustomButton = styled(Button)`
     &:hover {
       background-color: #ffd700;
     }
+    &:disabled {
+      background-color: #ebebe4;
+      box-shadow: none;
+    }
   }
 `;
 // TODO: don't use styled for button but just use the rebass/styled-components so that disabled styling works properly
@@ -155,7 +159,16 @@ const TeamRecruitingPage = (props: TeamRecruitingPageProps) => {
   // TODO: extra - have share team code copy to clipboard. right now it's a link but is broken
 
   if (teamInfo.status == TeamStatus.Active) {
-    // TODO: add similar msg to above
+    return (
+      <Flex backgroundColor="#faf9f6" color="black">
+        <Flex justifyContent="center" alignItems="center" height="100vh" width="100%">
+          <Flex justifyContent="space-between" alignItems="center" width="50%">
+            <Typography variant="body1">{`You already have a team. Go to the team page!`}</Typography>
+          </Flex>
+        </Flex>
+        <Sidebar />
+      </Flex>
+    );
   }
 
   const teamSize = teamInfo.users.length;
@@ -211,9 +224,7 @@ const TeamRecruitingPage = (props: TeamRecruitingPageProps) => {
         </InnerContainer>
         {showRedText && (
           <RedText>
-            {/* Share Invitation Link: <a href="#">asdf</a>
-            <br /> */}
-            Share Team Code: <a href="#">{teamInfo.code}</a>
+            Share Team Code: {teamInfo.code}
           </RedText>
         )}
       </Content>

@@ -208,34 +208,36 @@ const LobbyPage = (props: LobbyPageProps) => {
   return (
     <Flex backgroundColor="#faf9f6" color="black">
       <Flex justifyContent="center" alignItems="center" height="100vh" width="100%">
-        <Flex justifyContent="space-between" alignItems="center" width="50%">
+        <Flex flexDirection="column" alignItems="center">
+          <Flex flexDirection="row" justifyContent="space-between" alignItems="center" width="150%">
+            <StyledButton
+              variant="contained"
+              color="primary"
+              startIcon={<AddCircleIcon />}
+              onClick={() => {
+                setViewState("create");
+                setErrorMsg("");
+              }} // TODO: change it to something like <Link>
+            >
+              Create Team
+            </StyledButton>
+            <StyledButton
+              variant="contained"
+              color="primary"
+              startIcon={<GroupAddIcon />}
+              onClick={() => {
+                setViewState("join");
+                setErrorMsg("");
+              }}
+            >
+              Join Team
+            </StyledButton>
+          </Flex>
           {errorMsg && (
             <Typography variant="body1" color="red">
               {errorMsg}
             </Typography>
           )}
-          <StyledButton
-            variant="contained"
-            color="primary"
-            startIcon={<AddCircleIcon />}
-            onClick={() => {
-              setViewState("create");
-              setErrorMsg("");
-            }} // TODO: change it to something like <Link>
-          >
-            Create Team
-          </StyledButton>
-          <StyledButton
-            variant="contained"
-            color="primary"
-            startIcon={<GroupAddIcon />}
-            onClick={() => {
-              setViewState("join");
-              setErrorMsg("");
-            }}
-          >
-            Join Team
-          </StyledButton>
         </Flex>
       </Flex>
       <Sidebar />
