@@ -122,6 +122,23 @@ const BulletPoint = styled.div`
   padding-left: 8px;
 `;
 
+const StyledButton2 = styled(Button)`
+  && {
+    width: 30%;
+    height: 50px;
+    margin-top: 16px;
+    margin-bottom: 16px;
+    font-size: 1rem;
+    background-color: #ffd166;
+    color: #000000;
+    border-radius: 10px;
+    box-shadow: 0px 3px 5px rgba(0, 0, 0, 0.2);
+    &:hover {
+      background-color: #ffd700;
+    }
+  }
+`;
+
 type TeamRecruitingPageProps = {
   userId?: string;
 };
@@ -173,10 +190,14 @@ const TeamRecruitingPage = (props: TeamRecruitingPageProps) => {
     // TODO: style this better
     // TODO: add button to go to lobby page
     return (
-      <Flex backgroundColor="#faf9f6" color="black">
-        <Flex justifyContent="center" alignItems="center" height="100vh" width="100%">
-          <Flex justifyContent="space-between" alignItems="center" width="50%">
-            <Typography variant="body1">{`You don't have a team yet. Create or join a team first!`}</Typography>
+      <Flex backgroundColor="#faf9f6" color="black" flexDirection="column"> {/* Changed flexDirection to column */}
+        <Flex justifyContent="center" alignItems="center" height="100vh" width="100%"> {/* Decreased height to 80vh */}
+          <Flex flexDirection="column" alignItems="center"> {/* Changed flexDirection to column */}
+            <Typography variant="h5">You don't have a team yet. Create or join a team first:</Typography>
+            {/* Add button to problem page */}
+            <StyledButton2 variant="contained" color="primary" onClick={() => window.location.href = "/lobby"}>
+              Back to Lobby
+            </StyledButton2>
           </Flex>
         </Flex>
         <Sidebar />
@@ -187,10 +208,14 @@ const TeamRecruitingPage = (props: TeamRecruitingPageProps) => {
 
   if (teamInfo.status == TeamStatus.Active) {
     return (
-      <Flex backgroundColor="#faf9f6" color="black">
-        <Flex justifyContent="center" alignItems="center" height="100vh" width="100%">
-          <Flex justifyContent="space-between" alignItems="center" width="50%">
-            <Typography variant="body1">{`You already have a team. Go to the team page!`}</Typography>
+      <Flex backgroundColor="#faf9f6" color="black" flexDirection="column"> {/* Changed flexDirection to column */}
+        <Flex justifyContent="center" alignItems="center" height="100vh" width="100%"> {/* Decreased height to 80vh */}
+          <Flex flexDirection="column" alignItems="center"> {/* Changed flexDirection to column */}
+            <Typography variant="h5">You already have a team. Go to the team page:</Typography>
+            {/* Add button to problem page */}
+            <StyledButton2 variant="contained" color="primary" onClick={() => window.location.href = "/team"}>
+              Team Page
+            </StyledButton2>
           </Flex>
         </Flex>
         <Sidebar />
