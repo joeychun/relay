@@ -112,9 +112,9 @@ export type SubproblemData = {
 };
 
 export type subproblemAttemptResponseType = {
-  subproblemAttempt: SubproblemAttempt;
+  mySubproblemIndex: number;
   subproblemData: SubproblemData;
-  previousSubproblemAttempt?: SubproblemAttempt; // empty if first to go
+  subproblemAttempts: SubproblemAttempt[]; // empty if first to go
 };
 
 // export enum ProblemResultType {

@@ -93,10 +93,7 @@ const App = () => {
         <Route path="/admin" element={<Admin />} />
         <Route path="/team" element={<TeamPage userId={userId} />} />
         <Route path="/team-recruit" element={<TeamRecruitingPage userId={userId} />} />
-        <Route
-          path="/problem"
-          element={<Problem problemText={example.problemText} image={null} prevAnswer={3} />}
-        />
+        <Route path="/problem" element={<Problem userId={userId} />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>

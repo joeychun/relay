@@ -2,6 +2,7 @@ import UserModel from "../models/User";
 
 import {
   NUM_PROBLEMS,
+  TypedRequestQuery,
   User,
   getUserActiveOrRecruitingTeam,
   getUserActiveTeam,
@@ -120,7 +121,7 @@ const submitSubproblemAttempt = async (
 };
 
 const loadSubproblemAttempt = async (
-  req: TypedRequestBody<{}>,
+  req: TypedRequestQuery<{}>,
   res // subproblemAttemptResponseType: subproblem, subproblemAttempt (can be null)
 ) => {
   // Takes in userid
@@ -136,14 +137,14 @@ const loadSubproblemAttempt = async (
 
   var subproblemAttempt;
   var subproblem;
-  var previousSubproblemAttempt;
+  var problemAttempt;
   const activeProblem = await RelayProblemModel.findOne({
     status: ProblemStatus.Active,
   });
   const myTeam = await getUserActiveTeam(myUserId);
 
   if (!!activeProblem && !!myTeam) {
-    const problemAttempt = await RelayProblemAttemptModel.findOne({
+    problemAttempt = await RelayProblemAttemptModel.findOne({
       problem: activeProblem,
       team: myTeam,
     }).populate<{ subproblemAttempts: SubproblemAttempt[] }>("subproblemAttempts");
@@ -153,9 +154,6 @@ const loadSubproblemAttempt = async (
         assignedUser: myUserId,
       });
       subproblem = await SubproblemModel.findById(subproblemAttempt.subproblem);
-      if (subproblem.index > 0) {
-        previousSubproblemAttempt = problemAttempt.subproblemAttempts[subproblem.index - 1];
-      }
     } else {
       console.log("Active team and problem, but no attempt found.");
     }
@@ -164,12 +162,23 @@ const loadSubproblemAttempt = async (
   }
 
   return res.status(200).json({
-    subproblemAttempt,
+    mySubproblemIndex: subproblem?.index ?? -1,
     subproblemData: {
       question: subproblem?.question,
       category: subproblem?.category,
     },
-    previousSubproblemAttempt,
+    subproblemAttempts: problemAttempt?.subproblems,
+  });
+};
+
+const loadRandomSubproblem = async (req: TypedRequestQuery<{}>, res) => {
+  const randomProblem = await SubproblemModel.findOne();
+
+  return res.status(200).json({
+    subproblemData: {
+      question: randomProblem?.question,
+      category: randomProblem?.category,
+    },
   });
 };
 
@@ -201,5 +210,6 @@ const loadProblemResults = async (
 export default {
   submitSubproblemAttempt,
   loadSubproblemAttempt,
+  loadRandomSubproblem,
   loadProblemResults,
 };

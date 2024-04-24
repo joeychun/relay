@@ -2,6 +2,7 @@ import express from "express";
 import auth from "./auth";
 import socketManager from "./server-socket";
 import teamCalls from "./apiCalls/teamCalls";
+import problemCalls from "./apiCalls/problemCalls";
 const router = express.Router();
 
 router.post("/login", auth.login);
@@ -33,6 +34,8 @@ router.post(`/createTeam`, teamCalls.createTeam);
 router.post(`/joinTeam`, teamCalls.joinTeam);
 router.get(`/team`, teamCalls.getCurrentUserTeam);
 router.post(`/setTeamName`, teamCalls.setTeamName);
+router.get(`/subproblemAttempt`, problemCalls.loadSubproblemAttempt);
+router.get(`/randomSubproblem`, problemCalls.loadRandomSubproblem);
 
 // anything else falls to this "not found" case
 router.all("*", (req, res) => {

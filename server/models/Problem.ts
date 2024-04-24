@@ -31,6 +31,7 @@ const SubproblemSchema: Schema = new Schema({
     type: String,
     enum: Object.values(SubproblemCategory),
     required: true,
+    default: SubproblemCategory.Other,
   },
 });
 
@@ -98,21 +99,13 @@ export interface RelayProblemAttempt extends Document {
 const RelayProblemAttemptSchema: Schema = new Schema({
   problem: { type: Schema.Types.ObjectId, ref: "RelayProblem", required: true },
   team: { type: Schema.Types.ObjectId, ref: "Team", required: true },
-  subproblemAttempts: [
-    { type: Schema.Types.ObjectId, ref: "SubproblemAttempt" },
-  ],
+  subproblemAttempts: [{ type: Schema.Types.ObjectId, ref: "SubproblemAttempt" }],
 });
 
 RelayProblemAttemptSchema.index({ problem: 1, team: 1 }, { unique: true });
 
-export const SubproblemModel = model<Subproblem>(
-  "Subproblem",
-  SubproblemSchema
-);
-export const RelayProblemModel = model<RelayProblem>(
-  "RelayProblem",
-  RelayProblemSchema
-);
+export const SubproblemModel = model<Subproblem>("Subproblem", SubproblemSchema);
+export const RelayProblemModel = model<RelayProblem>("RelayProblem", RelayProblemSchema);
 export const SubproblemAttemptModel = model<SubproblemAttempt>(
   "SubproblemAttempt",
   SubproblemAttemptSchema

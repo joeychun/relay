@@ -1,8 +1,12 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import Sidebar from "../Sidebar";
-import { Typography, TextField, Button } from "@mui/material";
+import { Typography, TextField, Button, CircularProgress, Box } from "@mui/material";
 import ProblemDisplayer from "../ProblemDisplayer";
+import { Flex } from "rebass/styled-components";
+import { SubproblemData, subproblemAttemptResponseType } from "../../../../shared/apiTypes";
+import { get } from "../../utilities";
+import { SubproblemCategory } from "../../../../server/models/Problem";
 
 const Container = styled.div`
   display: flex;
@@ -59,7 +63,6 @@ const SizedProblemDisplayer = styled(ProblemDisplayer)`
 `;
 
 const StyledTextField = styled(TextField)`
-  width: 20%;
   margin-bottom: 20px;
 `;
 
@@ -80,58 +83,176 @@ const EmptyDiv = styled.div`
   height: 20px;
 `;
 
-const ProblemPage = ({ problemText, image, prevAnswer }) => {
-  const [userAnswer, setUserAnswer] = useState("");
+type ProblemPageProps = {
+  userId?: string;
+};
 
-  const handleSubmit = () => {
+const ProblemPage = (props: ProblemPageProps) => {
+  const userId = props.userId;
+
+  const [userAnswer, setUserAnswer] = useState("");
+  const [subproblemAttempt, setSubproblemAttempt] = useState<subproblemAttemptResponseType | null>(
+    null
+  );
+  // TODO: add a real question here
+  const [randomSubproblem, setRandomSubproblem] = useState<SubproblemData>({
+    question: "What is pi?",
+    category: SubproblemCategory.Other,
+  });
+
+  const handleSubmit = (userAnswer: string) => {
     // Handle form submission, e.g., submit the user's answer to the server
     console.log("User submitted answer:", userAnswer);
   };
+
+  // load answers
+  useEffect(() => {
+    try {
+      if (!!userId) {
+        get(`/api/subproblemAttempt`, {}).then((res: subproblemAttemptResponseType) => {
+          setSubproblemAttempt(res);
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching team:", error);
+    }
+  }, [userId]);
+
+  useEffect(() => {
+    try {
+      if (!!userId) {
+        get(`/api/subproblemAttempt`, {}).then((res: subproblemAttemptResponseType) => {
+          setSubproblemAttempt(res);
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching team:", error);
+    }
+  }, [userId]);
+
+  useEffect(() => {
+    try {
+      if (!subproblemAttempt && !randomSubproblem) {
+        get(`/api/randomSubproblem`, {}).then((res: SubproblemData) => {
+          setRandomSubproblem(res);
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching team:", error);
+    }
+  }, [userId]);
+
+  if (!subproblemAttempt && !randomSubproblem) {
+    return <CircularProgress />;
+  }
 
   // TODO: ADD state for if not in team here. maybe you can see the problem but there's no space to put in the answer?
   // and it says something like to start solving, create or join a team and button to lobby
 
   return (
     <Container>
-      <StatusContainer>
-        <StatusTitle variant="h6">Answer Submission Status</StatusTitle>
-        <StatusTable>
-          <tbody>
-            <StatusRow>
-              <StatusCell>UserA</StatusCell>
-              <StatusCell>UserB</StatusCell>
-              <StatusCell>UserC</StatusCell>
-            </StatusRow>
-            <StatusRow>
-              <StatusCell>✅</StatusCell>
-              <StatusCell>✅</StatusCell>
-              <StatusCell>✅</StatusCell>
-            </StatusRow>
-          </tbody>
-        </StatusTable>
-      </StatusContainer>
-      <ProblemContainer>
-        <SizedProblemDisplayer
-          text={<ProblemText variant="h5">{problemText}</ProblemText>}
-          image={image}
-        />
-        {prevAnswer && (
-          <Typography variant="body1">Answer provided by teammate: {prevAnswer}</Typography>
+      {!!subproblemAttempt && (
+        <StatusContainer>
+          <StatusTitle variant="h6">Answer Submission Status</StatusTitle>
+          <StatusTable>
+            <tbody>
+              <StatusRow>
+                <StatusCell>UserA</StatusCell>
+                <StatusCell>UserB</StatusCell>
+                <StatusCell>UserC</StatusCell>
+              </StatusRow>
+              <StatusRow>
+                <StatusCell>✅</StatusCell>
+                <StatusCell>✅</StatusCell>
+                <StatusCell>✅</StatusCell>
+              </StatusRow>
+            </tbody>
+          </StatusTable>
+        </StatusContainer>
+      )}
+      <Flex
+        width="100%"
+        flexDirection="column"
+        alignItems="center"
+        justifyContent="center"
+        sx={{ gap: 3 }}
+      >
+        {!!subproblemAttempt ? (
+          <ProblemText variant="h5">{subproblemAttempt.subproblemData.question}</ProblemText>
+        ) : (
+          <ProblemText variant="h5">{randomSubproblem.question}</ProblemText>
         )}
-        <EmptyDiv />
-        <StyledTextField
-          multiline
-          rows={1}
-          variant="outlined"
-          placeholder="Type your answer here..."
-          value={userAnswer}
-          onChange={(e) => setUserAnswer(e.target.value)}
-        />
-        <EmptyDiv />
-        <SubmitButton variant="contained" onClick={handleSubmit}>
+        {!!subproblemAttempt &&
+          subproblemAttempt.mySubproblemIndex != -1 &&
+          (subproblemAttempt.mySubproblemIndex == 0 ? (
+            <Typography variant="body1">You are the first to go!</Typography>
+          ) : (
+            <Typography variant="body1">
+              Answer provided by teammate:{" "}
+              {subproblemAttempt.subproblemAttempts[subproblemAttempt.mySubproblemIndex - 1]}
+            </Typography>
+          ))}
+        {/* {subproblemAttempt?.subproblemAttempts?[subproblemAttempt?.mySubproblemIndex - 1]} */}
+
+        {/* <SubmitButton variant="contained" onClick={handleSubmit}>
           Submit
-        </SubmitButton>
-      </ProblemContainer>
+        </SubmitButton> */}
+
+        {!subproblemAttempt ? (
+          <Flex
+            width="100%"
+            flexDirection="column"
+            alignItems="center"
+            justifyContent="center"
+            sx={{ gap: 3 }}
+          >
+            <Typography variant="body1">
+              You are not logged in. Log in and join a team to start playing.
+            </Typography>
+            <Button
+              onClick={() => {
+                window.location.href = "/login";
+              }}
+            >
+              Login
+            </Button>
+          </Flex>
+        ) : (
+          <Flex
+            width="100%"
+            flexDirection="column"
+            alignItems="center"
+            justifyContent="center"
+            sx={{ gap: 3 }}
+          >
+            <TextField
+              margin="dense"
+              type="text"
+              fullWidth
+              placeholder="Type your answer here..."
+              value={userAnswer}
+              onChange={(event) => {
+                const newVal = event.target.value;
+                setUserAnswer(newVal);
+              }}
+              autoFocus
+              onKeyUp={(event) => {
+                if (event.key === "Enter") {
+                  if (userAnswer.length < 1) return;
+                  handleSubmit(userAnswer);
+                }
+              }}
+            />
+            <Button onClick={() => handleSubmit(userAnswer)}>Submit</Button>
+            <Typography variant="body1">
+              Last submission:{" "}
+              {subproblemAttempt.subproblemAttempts[subproblemAttempt.mySubproblemIndex].answer ??
+                "No submission yet."}
+            </Typography>
+          </Flex>
+        )}
+      </Flex>
+
       <Sidebar />
     </Container>
   );
