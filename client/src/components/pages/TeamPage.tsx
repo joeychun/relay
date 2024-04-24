@@ -15,6 +15,7 @@ import { ConstructionOutlined } from "@mui/icons-material";
 import { Flex } from "rebass/styled-components";
 import { TeamStatus } from "../../../../server/models/Team";
 import { CircularProgress, Typography } from "@mui/material";
+import ProblemDisplayModal from "../modules/ProblemDisplayModal";
 import { get } from "../../utilities";
 
 const Container = styled.div`
@@ -114,6 +115,18 @@ const TableRow = styled.tr`
   align-items: center;
 `;
 
+const RelayTableRow = styled(TableRow)`
+  && {
+    border-bottom: 1px solid #ddd;
+    display: flex;
+    align-items: center;
+    &:hover {
+      background-color: #eeeeee;
+      cursor: pointer;
+    }
+  }
+`;
+
 const EmojiCell = styled.th`
   width: 50px;
   padding: 12px 8px;
@@ -206,19 +219,20 @@ const TeamPage = (props: TeamRecruitingPageProps) => {
   const userId = props.userId;
   const [teamInfo, setTeamInfo] = useState<TeamWithInfo | null>(null);
   const [teamIsLoaded, setTeamIsLoaded] = useState<boolean>(false);
+  const [isProblemDisplayModalOpen, setIsProblemDisplayOpen] = useState<boolean>(false);
+  const [problemDisplayDate, setProblemDisplayDate] = useState<string | null>(null);
+  const [isDropdownOpen, setDropdownOpen] = useState<boolean>(false);
+  const [teamName, setTeamName] = useState("Team Name");
 
   const teammates = ["User 1", "User 2", "User 3"];
   const latestStreak = 5;
   const longestStreak = 8;
 
   const recentProblems = [
-    { problem: "Problem 1", correctAnswer: "3", userAnswer: "3 ✅" },
-    { problem: "Problem 2", correctAnswer: "7", userAnswer: "7 ✅" },
-    { problem: "Problem 3", correctAnswer: "9", userAnswer: "2 ❌" },
+    { date: "4/24/2024", results: "✅✅✅" },
+    { date: "4/23/2024", results: "✅✅✅" },
+    { date: "4/22/2024", results: "✅✅❌" },
   ];
-
-  const [isDropdownOpen, setDropdownOpen] = useState(false);
-  const [teamName, setTeamName] = useState("Team Name");
 
   // load current team
   useEffect(() => {
@@ -358,23 +372,32 @@ const TeamPage = (props: TeamRecruitingPageProps) => {
             <Table>
               <thead>
                 <TableRow>
-                  <TableCell>Problem</TableCell>
-                  <TableCell>Correct Answer</TableCell>
-                  <TableCell>User's Answer</TableCell>
+                  <TableCell>Relay Date</TableCell>
+                  <TableCell>Results</TableCell>
                 </TableRow>
               </thead>
               <tbody>
                 {recentProblems.map((problem, index) => (
-                  <TableRow key={index}>
-                    <TableCell>{problem.problem}</TableCell>
-                    <TableCell>{problem.correctAnswer}</TableCell>
-                    <TableCell>{problem.userAnswer}</TableCell>
-                  </TableRow>
+                  <RelayTableRow key={index} onClick={() => {
+                    setIsProblemDisplayOpen(!isProblemDisplayModalOpen);
+                    setProblemDisplayDate(problem.date);
+                  }}>
+                    <TableCell>{problem.date}</TableCell>
+                    <TableCell>{problem.results}</TableCell>
+                  </RelayTableRow>
                 ))}
               </tbody>
             </Table>
           </DropdownContent>
         </DropdownContainer>
+        <ProblemDisplayModal
+          title={`Problems for ${problemDisplayDate}`}
+          // date={}
+          onClose={() => {
+            setIsProblemDisplayOpen(false);
+          }}
+          open={isProblemDisplayModalOpen}
+        />
       </Content>
       <Sidebar />
     </Container>
