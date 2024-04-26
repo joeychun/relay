@@ -23,7 +23,7 @@ import {
   Typography,
   Button,
 } from "@mui/material";
-import copy from 'copy-to-clipboard';
+import copy from "copy-to-clipboard";
 import { TeamStatus } from "../../../../server/models/Team";
 import { get, post } from "../../utilities";
 import EditValueModal from "../modules/EditValueModal";
@@ -226,12 +226,24 @@ const TeamRecruitingPage = (props: TeamRecruitingPageProps) => {
     // TODO: style this better
     // TODO: add button to go to lobby page
     return (
-      <Flex backgroundColor="#faf9f6" color="black" flexDirection="column"> {/* Changed flexDirection to column */}
-        <Flex justifyContent="center" alignItems="center" height="100vh" width="100%"> {/* Decreased height to 80vh */}
-          <Flex flexDirection="column" alignItems="center"> {/* Changed flexDirection to column */}
-            <Typography variant="h5">You don't have a team yet. Create or join a team first:</Typography>
+      <Flex backgroundColor="#faf9f6" color="black" flexDirection="column">
+        {" "}
+        {/* Changed flexDirection to column */}
+        <Flex justifyContent="center" alignItems="center" height="100vh" width="100%">
+          {" "}
+          {/* Decreased height to 80vh */}
+          <Flex flexDirection="column" alignItems="center">
+            {" "}
+            {/* Changed flexDirection to column */}
+            <Typography variant="h5">
+              You don't have a team yet. Create or join a team first:
+            </Typography>
             {/* Add button to problem page */}
-            <StyledButton2 variant="contained" color="primary" onClick={() => window.location.href = "/lobby"}>
+            <StyledButton2
+              variant="contained"
+              color="primary"
+              onClick={() => (window.location.href = "/lobby")}
+            >
               Back to Lobby
             </StyledButton2>
           </Flex>
@@ -244,12 +256,19 @@ const TeamRecruitingPage = (props: TeamRecruitingPageProps) => {
 
   if (teamInfo.status == TeamStatus.Active) {
     return (
-      <Flex backgroundColor="#faf9f6" color="black" flexDirection="column"> {/* Changed flexDirection to column */}
-        <Flex justifyContent="center" alignItems="center" height="100vh" width="100%"> {/* Decreased height to 80vh */}
-          <Flex flexDirection="column" alignItems="center"> {/* Changed flexDirection to column */}
-            <Typography variant="h5">You already have a team. Go to the team page:</Typography>
+      <Flex backgroundColor="#faf9f6" color="black" flexDirection="column">
+        {/* Changed flexDirection to column */}
+        <Flex justifyContent="center" alignItems="center" height="100vh" width="100%">
+          {/* Decreased height to 80vh */}
+          <Flex flexDirection="column" alignItems="center">
+            {/* Changed flexDirection to column */}
+            <Typography variant="h5">Your team is active! Go to the team page:</Typography>
             {/* Add button to problem page */}
-            <StyledButton2 variant="contained" color="primary" onClick={() => window.location.href = "/team"}>
+            <StyledButton2
+              variant="contained"
+              color="primary"
+              onClick={() => (window.location.href = "/team")}
+            >
               Team Page
             </StyledButton2>
           </Flex>
@@ -264,11 +283,7 @@ const TeamRecruitingPage = (props: TeamRecruitingPageProps) => {
   return (
     <Container>
       <Content>
-        {showRedText && (
-          <RedText>
-            &nbsp;
-          </RedText>
-        )}
+        {showRedText && <RedText>&nbsp;</RedText>}
         <InnerContainer>
           <TeamContainer>
             <TeamInfoContainer>
@@ -322,7 +337,9 @@ const TeamRecruitingPage = (props: TeamRecruitingPageProps) => {
         {showRedText && (
           <RedText>
             Share Team Code:&nbsp;
-            <Clickable onClick={() => copy(teamInfo.code)}><u>{teamInfo.code}</u></Clickable>
+            <Clickable onClick={() => copy(teamInfo.code)}>
+              <u>{teamInfo.code}</u>
+            </Clickable>
           </RedText>
         )}
       </Content>

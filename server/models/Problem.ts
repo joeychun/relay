@@ -103,6 +103,7 @@ const RelayProblemAttemptSchema: Schema = new Schema({
 });
 
 RelayProblemAttemptSchema.index({ problem: 1, team: 1 }, { unique: true });
+SubproblemAttemptSchema.index({ parentProblemAttempt: 1, subproblem: 1 }, { unique: true });
 
 export const SubproblemModel = model<Subproblem>("Subproblem", SubproblemSchema);
 export const RelayProblemModel = model<RelayProblem>("RelayProblem", RelayProblemSchema);

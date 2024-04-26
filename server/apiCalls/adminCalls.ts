@@ -3,6 +3,7 @@ import UserModel from "../models/User";
 import {
   NUM_PROBLEMS,
   Team,
+  TypedRequestQuery,
   User,
   addProblemRequestBodyType,
   problemResponseType,
@@ -51,30 +52,39 @@ const createProblem = async (
     return res.status(400).json({ error: e });
   }
 
-  if (req.body.questions.length != NUM_PROBLEMS || req.body.answers.length != NUM_PROBLEMS) {
+  if (req.body.questionsWithAnswers.length != NUM_PROBLEMS) {
     return res.status(400).json({ error: "incorrect number of questions for new problem" });
   }
-
   let subproblems: Subproblem[] = [];
 
   for (let i = 0; i < NUM_PROBLEMS; i++) {
     const subproblem = new SubproblemModel({
       index: i,
-      question: req.body.questions[i],
-      answer: req.body.answers[i].trim(),
-      category: req.body.category,
+      question: req.body.questionsWithAnswers[i].question.trim(),
+      answer: req.body.questionsWithAnswers[i].answer.trim(),
+      // category: req.body.category,
     });
     const savedSubproblem = await subproblem.save();
     subproblems.push(savedSubproblem);
   }
 
-  req.body.date.setHours(0, 0, 0, 0);
+  const date = new Date(req.body.date);
+  date.setHours(0, 0, 0, 0);
   const problem = new RelayProblemModel({
     subproblems: subproblems,
-    date: req.body.date,
+    date,
   });
-  const savedProblem = await problem.save();
-  return res.status(200).json({ problem: savedProblem });
+  await problem.save();
+  // return res.status(200).json({ problem: savedProblem });
+
+  const problems = await RelayProblemModel.find({})
+    .populate<{
+      subproblems: Subproblem[];
+    }>("subproblems")
+    .sort({ date: -1 }) // sort by date in desc order
+    .limit(5); // get the latest five
+
+  return res.status(200).json({ problems });
 };
 
 function shuffleArray<T>(array: T[]): T[] {
@@ -89,7 +99,7 @@ function shuffleArray<T>(array: T[]): T[] {
 
 export async function createRelayProblemAttempt(teamId: string, problemId: string) {
   // 1. create the relay problem attempt
-  // 2. create the first subproblem attempt
+  // 2. create the all subproblem attempts
   // something like relayProblem.subproblemAttempts.push(createSubproblemAttempt());
   // strip time of date
   const relayProblemAttempt = new RelayProblemAttemptModel({
@@ -114,11 +124,10 @@ export async function createRelayProblemAttempt(teamId: string, problemId: strin
   }
 
   const shuffledUsers = shuffleArray(teamUsers);
-
   const parentRelayProblem = await RelayProblemModel.findById(problemId).populate<{
     subproblems: Subproblem[];
   }>("subproblems");
-  if (!parentRelayProblem || parentRelayProblem.subproblems.length == NUM_PROBLEMS) {
+  if (!parentRelayProblem || parentRelayProblem.subproblems.length != NUM_PROBLEMS) {
     // should not happen
     throw new Error("no parent problem found");
   }
@@ -134,12 +143,12 @@ export async function createRelayProblemAttempt(teamId: string, problemId: strin
   }
 
   for (let i = 0; i < NUM_PROBLEMS; i++) {
-    const newSubproblem = (await createSubproblemAttempt(
-      parentRelayProblem._id,
+    const newSubproblemAttempt = (await createSubproblemAttempt(
+      savedAttemptWithSubproblemAttempts._id,
       shuffledUsers[i],
       i
     )) as SubproblemAttempt;
-    savedAttemptWithSubproblemAttempts.subproblemAttempts.push(newSubproblem);
+    savedAttemptWithSubproblemAttempts.subproblemAttempts.push(newSubproblemAttempt);
   }
   const updatedRelayProblemAttempt = await savedAttemptWithSubproblemAttempts.save();
   return updatedRelayProblemAttempt;
@@ -181,7 +190,7 @@ async function gradeRelayProblemAttempt(relayProblemAttemptId: string) {
   return savedTeam;
 }
 
-const releaseProblem = async (
+const publishProblem = async (
   req: TypedRequestBody<updateProblemStatusRequestBodyType>,
   res // problemResponseType
 ) => {
@@ -203,22 +212,37 @@ const releaseProblem = async (
   if (!!activeProblem) {
     return res.status(400).json({ error: "Active problem already exists." });
   }
-  Promise.all(teams.map((team) => createRelayProblemAttempt(team.id, req.body.problemId)))
+  var errorFromCreating;
+  await Promise.all(teams.map((team) => createRelayProblemAttempt(team.id, req.body.problemId)))
     .then((results) => {
       console.log("Success", results);
     })
     .catch((error) => {
-      return res.status(400).json({ error: error });
+      console.log("ERROR WHEN CREATING", error);
+      errorFromCreating = error;
     });
+
+  if (!!errorFromCreating) {
+    res.status(400).json({ error: errorFromCreating });
+    return;
+  }
   thisProblem.status = ProblemStatus.Active;
-  const releasedProblem = await thisProblem.save();
+  await thisProblem.save();
+
+  const problems = await RelayProblemModel.find({})
+    .populate<{
+      subproblems: Subproblem[];
+    }>("subproblems")
+    .sort({ date: -1 }) // sort by date in desc order
+    .limit(5); // get the latest five
+
+  return res.status(200).json({ problems });
 
   // later can use a script to automatically release at midnight, but for now use manual release
   // for all *active* teams, create a RelayProblemAttempt
-  return res.status(200).json({ problem: releasedProblem });
 };
 
-const closeProblem = async (
+const releaseAnswer = async (
   req: TypedRequestBody<updateProblemStatusRequestBodyType>,
   res // problemResponseType
 ) => {
@@ -241,20 +265,33 @@ const closeProblem = async (
   });
 
   // TODO: use lock?
-  Promise.all(relayProblemAttempts.map((attempt) => gradeRelayProblemAttempt(attempt._id)))
+  var errorFromCreating;
+  await Promise.all(relayProblemAttempts.map((attempt) => gradeRelayProblemAttempt(attempt._id)))
     .then((results) => {
       console.log("Success", results);
     })
     .catch((error) => {
-      return res.status(400).json({ error: error });
+      console.log("ERROR WHEN CREATING", error);
+      error = errorFromCreating;
     });
 
+  if (!!errorFromCreating) {
+    res.status(400).json({ error: errorFromCreating });
+    return;
+  }
   console.log(`Problem with id ${req.body.problemId} revealed`);
-  return res.status(200).json({ problem: savedProblem });
+  const problems = await RelayProblemModel.find({})
+    .populate<{
+      subproblems: Subproblem[];
+    }>("subproblems")
+    .sort({ date: -1 }) // sort by date in desc order
+    .limit(5); // get the latest five
+
+  return res.status(200).json({ problems });
 };
 
 const loadRecentProblems = async (
-  req: TypedRequestBody<{}>,
+  req: TypedRequestQuery<{}>,
   res // problemResponseType
 ) => {
   const myUserId: string = req.user?._id as string;
@@ -265,6 +302,9 @@ const loadRecentProblems = async (
   }
 
   const problems = await RelayProblemModel.find({})
+    .populate<{
+      subproblems: Subproblem[];
+    }>("subproblems")
     .sort({ date: -1 }) // sort by date in desc order
     .limit(5); // get the latest five
 
@@ -273,7 +313,7 @@ const loadRecentProblems = async (
 
 export default {
   createProblem,
-  releaseProblem,
-  closeProblem,
+  publishProblem,
+  releaseAnswer,
   loadRecentProblems,
 };

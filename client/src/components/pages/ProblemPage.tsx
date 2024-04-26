@@ -4,7 +4,11 @@ import Sidebar from "../Sidebar";
 import { Typography, TextField, Button, CircularProgress, Box } from "@mui/material";
 import ProblemDisplayer from "../ProblemDisplayer";
 import { Flex } from "rebass/styled-components";
-import { SubproblemData, subproblemAttemptResponseType } from "../../../../shared/apiTypes";
+import {
+  NUM_PROBLEMS,
+  SubproblemData,
+  subproblemAttemptResponseType,
+} from "../../../../shared/apiTypes";
 import { get } from "../../utilities";
 import { SubproblemCategory } from "../../../../server/models/Problem";
 
@@ -94,6 +98,7 @@ const ProblemPage = (props: ProblemPageProps) => {
   const [subproblemAttempt, setSubproblemAttempt] = useState<subproblemAttemptResponseType | null>(
     null
   );
+
   // TODO: add a real question here
   const [randomSubproblem, setRandomSubproblem] = useState<SubproblemData>({
     question: "What is pi?",
@@ -102,15 +107,21 @@ const ProblemPage = (props: ProblemPageProps) => {
 
   const handleSubmit = (userAnswer: string) => {
     // Handle form submission, e.g., submit the user's answer to the server
+    // TODO: hook up submit
     console.log("User submitted answer:", userAnswer);
   };
 
-  // load answers
+  // load attempt
   useEffect(() => {
     try {
       if (!!userId) {
         get(`/api/subproblemAttempt`, {}).then((res: subproblemAttemptResponseType) => {
-          setSubproblemAttempt(res);
+          if (res.mySubproblemIndex >= 0 && res.subproblemAttempts.length != NUM_PROBLEMS) {
+            throw new Error("Subproblem attempts wrong");
+          }
+          if (res.mySubproblemIndex != -1) {
+            setSubproblemAttempt(res);
+          }
         });
       }
     } catch (error) {
@@ -120,21 +131,12 @@ const ProblemPage = (props: ProblemPageProps) => {
 
   useEffect(() => {
     try {
-      if (!!userId) {
-        get(`/api/subproblemAttempt`, {}).then((res: subproblemAttemptResponseType) => {
-          setSubproblemAttempt(res);
-        });
-      }
-    } catch (error) {
-      console.error("Error fetching team:", error);
-    }
-  }, [userId]);
-
-  useEffect(() => {
-    try {
-      if (!subproblemAttempt && !randomSubproblem) {
-        get(`/api/randomSubproblem`, {}).then((res: SubproblemData) => {
-          setRandomSubproblem(res);
+      if (!subproblemAttempt) {
+        console.log("getting random subproblem");
+        get(`/api/randomSubproblem`, {}).then((res: { subproblemData: SubproblemData | null }) => {
+          if (!!res.subproblemData) {
+            setRandomSubproblem(res.subproblemData);
+          }
         });
       }
     } catch (error) {
@@ -146,59 +148,18 @@ const ProblemPage = (props: ProblemPageProps) => {
     return <CircularProgress />;
   }
 
-  // TODO: ADD state for if not in team here. maybe you can see the problem but there's no space to put in the answer?
-  // and it says something like to start solving, create or join a team and button to lobby
-
-  return (
-    <Container>
-      {!!subproblemAttempt && (
-        <StatusContainer>
-          <StatusTitle variant="h6">Answer Submission Status</StatusTitle>
-          <StatusTable>
-            <tbody>
-              <StatusRow>
-                <StatusCell>UserA</StatusCell>
-                <StatusCell>UserB</StatusCell>
-                <StatusCell>UserC</StatusCell>
-              </StatusRow>
-              <StatusRow>
-                <StatusCell>✅</StatusCell>
-                <StatusCell>✅</StatusCell>
-                <StatusCell>✅</StatusCell>
-              </StatusRow>
-            </tbody>
-          </StatusTable>
-        </StatusContainer>
-      )}
-      <Flex
-        width="100%"
-        flexDirection="column"
-        alignItems="center"
-        justifyContent="center"
-        sx={{ gap: 3 }}
-      >
-        {!!subproblemAttempt ? (
-          <ProblemText variant="h5">{subproblemAttempt.subproblemData.question}</ProblemText>
-        ) : (
+  if (!userId) {
+    // show a dummy
+    return (
+      <Container>
+        <Flex
+          width="100%"
+          flexDirection="column"
+          alignItems="center"
+          justifyContent="center"
+          sx={{ gap: 3 }}
+        >
           <ProblemText variant="h5">{randomSubproblem.question}</ProblemText>
-        )}
-        {!!subproblemAttempt &&
-          subproblemAttempt.mySubproblemIndex != -1 &&
-          (subproblemAttempt.mySubproblemIndex == 0 ? (
-            <Typography variant="body1">You are the first to go!</Typography>
-          ) : (
-            <Typography variant="body1">
-              Answer provided by teammate:{" "}
-              {subproblemAttempt.subproblemAttempts[subproblemAttempt.mySubproblemIndex - 1]}
-            </Typography>
-          ))}
-        {/* {subproblemAttempt?.subproblemAttempts?[subproblemAttempt?.mySubproblemIndex - 1]} */}
-
-        {/* <SubmitButton variant="contained" onClick={handleSubmit}>
-          Submit
-        </SubmitButton> */}
-
-        {!subproblemAttempt ? (
           <Flex
             width="100%"
             flexDirection="column"
@@ -217,7 +178,22 @@ const ProblemPage = (props: ProblemPageProps) => {
               Login
             </Button>
           </Flex>
-        ) : (
+        </Flex>
+        <Sidebar />
+      </Container>
+    );
+  }
+
+  if (!subproblemAttempt) {
+    return (
+      <Container>
+        <Flex
+          width="100%"
+          flexDirection="column"
+          alignItems="center"
+          justifyContent="center"
+          sx={{ gap: 3 }}
+        >
           <Flex
             width="100%"
             flexDirection="column"
@@ -225,6 +201,77 @@ const ProblemPage = (props: ProblemPageProps) => {
             justifyContent="center"
             sx={{ gap: 3 }}
           >
+            <Typography variant="body1" alignContent={"center"} textAlign={"center"}>
+              {`You're all caught up on problems! For now, enjoy this random problem, or head over to the team page to see your team's statistics.`}
+            </Typography>
+            <ProblemText variant="h5">{randomSubproblem.question}</ProblemText>
+
+            <Button
+              onClick={() => {
+                window.location.href = "/team";
+              }}
+            >
+              Take me to the team page!
+            </Button>
+          </Flex>
+        </Flex>
+        <Sidebar />
+      </Container>
+    );
+  }
+
+  const mySubproblemIndex = subproblemAttempt.mySubproblemIndex;
+  const allSubproblemAttempts = subproblemAttempt.subproblemAttempts;
+  const problemData = subproblemAttempt.subproblemData;
+  const myAttempt = mySubproblemIndex != -1 ? allSubproblemAttempts[mySubproblemIndex] : null;
+  const previousAttempt =
+    mySubproblemIndex > 0 ? allSubproblemAttempts[mySubproblemIndex - 1] : null;
+  console.log(mySubproblemIndex, allSubproblemAttempts, problemData, myAttempt, previousAttempt);
+  // TODO: make a username module
+  return (
+    <Container>
+      <StatusContainer>
+        <StatusTitle variant="h6">Answer Submission Status</StatusTitle>
+        <StatusTable>
+          <tbody>
+            <StatusRow>
+              {allSubproblemAttempts.map((attempt, index) => (
+                <StatusCell>{attempt.assignedUser.name ?? "Anonymous"}</StatusCell>
+              ))}
+            </StatusRow>
+            <StatusRow>
+              {allSubproblemAttempts.map((attempt) => (
+                <StatusCell>{attempt.answer ? "✅" : "⏳"}</StatusCell>
+              ))}
+            </StatusRow>
+          </tbody>
+        </StatusTable>
+      </StatusContainer>
+      <Flex
+        width="100%"
+        flexDirection="column"
+        alignItems="center"
+        justifyContent="center"
+        sx={{ gap: 3 }}
+      >
+        <ProblemText variant="h5">{problemData.question}</ProblemText>
+
+        {!previousAttempt ? (
+          <Typography variant="body1">You are the first to go!</Typography>
+        ) : (
+          <Typography variant="body1">
+            Answer provided by teammate: {previousAttempt.answer ?? "No answer yet."}
+          </Typography>
+        )}
+
+        <Flex
+          width="100%"
+          flexDirection="column"
+          alignItems="center"
+          justifyContent="center"
+          sx={{ gap: 3 }}
+        >
+          <Box width="250px">
             <TextField
               margin="dense"
               type="text"
@@ -243,14 +290,12 @@ const ProblemPage = (props: ProblemPageProps) => {
                 }
               }}
             />
-            <Button onClick={() => handleSubmit(userAnswer)}>Submit</Button>
-            <Typography variant="body1">
-              Last submission:{" "}
-              {subproblemAttempt.subproblemAttempts[subproblemAttempt.mySubproblemIndex].answer ??
-                "No submission yet."}
-            </Typography>
-          </Flex>
-        )}
+          </Box>
+          <Button onClick={() => handleSubmit(userAnswer)}>Submit</Button>
+          <Typography variant="body1">
+            Last submission: {myAttempt?.answer ?? "No submission yet."}
+          </Typography>
+        </Flex>
       </Flex>
 
       <Sidebar />

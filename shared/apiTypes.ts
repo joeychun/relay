@@ -18,6 +18,7 @@ import {
   SubproblemAttempt,
   RelayProblemAttempt,
   SubproblemCategory,
+  ProblemStatus,
 } from "../server/models/Problem";
 import { Team, TeamModel, TeamStatus } from "../server/models/Team";
 import { Types } from "mongoose";
@@ -86,18 +87,32 @@ export async function getUserTeams(userId: string) {
 
 // Admin
 
+export type QuestionData = {
+  question: string;
+  answer: string;
+  image: string | null; // Assuming image can be a string or null
+};
+
 export type addProblemRequestBodyType = {
-  questions: string[];
-  answers: string[];
+  questionsWithAnswers: QuestionData[];
   date: Date;
-  category: SubproblemCategory;
+  // category: SubproblemCategory; LATER
 };
 
 export type updateProblemStatusRequestBodyType = {
   problemId: string;
 };
 
-export type problemResponseType = { problem: RelayProblem };
+export type problemResponseType = { problem: RelayProblemWithSubproblems };
+
+export type RelayProblemWithSubproblems = {
+  _id: string;
+  subproblems: Subproblem[];
+  date: Date; // date the problem is for
+  status: ProblemStatus;
+};
+
+export type recentProblemResponseType = { problems: RelayProblemWithSubproblems[] };
 
 // Player
 
@@ -111,10 +126,15 @@ export type SubproblemData = {
   question: string;
 };
 
+export interface SubproblemAttemptWithUserInfo extends Document {
+  assignedUser: UserInfo;
+  answer?: string; // If answer is not undefined, it means the user has submitted
+}
+
 export type subproblemAttemptResponseType = {
   mySubproblemIndex: number;
   subproblemData: SubproblemData;
-  subproblemAttempts: SubproblemAttempt[]; // empty if first to go
+  subproblemAttempts: SubproblemAttemptWithUserInfo[];
 };
 
 // export enum ProblemResultType {
@@ -129,7 +149,7 @@ export type loadProblemResultsResponseType = {
 };
 
 export type userDataResponseType = {
-  name: string;
+  data: UserInfo;
 };
 
 export type setUserNameRequestBodyType = {

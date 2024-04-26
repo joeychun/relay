@@ -13,7 +13,7 @@ import "../utilities.css";
 import Lobby from "./pages/LobbyPage";
 import TeamPage from "./pages/TeamPage"; // TODO: update all filenames to ..Page.tsx
 import Problem from "./pages/ProblemPage";
-import Admin from "./pages/Admin";
+import AdminPage from "./pages/AdminPage";
 import Profile from "./pages/ProfilePage";
 import LoginPage from "./pages/LoginPage";
 import { CircularProgress } from "@mui/material";
@@ -90,7 +90,7 @@ const App = () => {
         />
         <Route path="/lobby" element={<Lobby userId={userId} />} />
         <Route path="/profile" element={<Profile userId={userId} />} />
-        <Route path="/admin" element={<Admin />} />
+        <Route path="/admin" element={<AdminPage userId={userId} />} />
         <Route path="/team" element={<TeamPage userId={userId} />} />
         <Route path="/team-recruit" element={<TeamRecruitingPage userId={userId} />} />
         <Route path="/problem" element={<Problem userId={userId} />} />

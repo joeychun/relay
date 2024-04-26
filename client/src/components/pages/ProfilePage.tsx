@@ -7,6 +7,7 @@ import {
   TypedRequestBody,
   userDataResponseType,
   setUserNameRequestBodyType,
+  UserInfo,
 } from "../../../../shared/apiTypes";
 import { Flex, Text } from "rebass/styled-components";
 import { Box, Grid, CircularProgress, Button, TextField, Typography } from "@mui/material";
@@ -19,9 +20,8 @@ type ProfilePageProps = {
 
 const ProfilePage = (props: ProfilePageProps) => {
   const userId = props.userId;
-  const [username, setUsername] = useState("");
+  const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
   const [isEditValueModalOpen, setIsEditValueModalOpen] = useState(false);
-  const [inputtedUsername, setInputtedUsername] = useState<string>("");
 
   const editName = (name: string) => {
     if (!userId) return Promise.resolve();
@@ -29,9 +29,9 @@ const ProfilePage = (props: ProfilePageProps) => {
       name,
     };
     console.log("Submitting new name:", name);
-    return post("/api/username", body).then((data: userDataResponseType) => {
+    return post("/api/username", body).then((res: userDataResponseType) => {
       console.log("updating username");
-      setUsername(data.name);
+      setUserInfo(res.data);
     });
   };
 
@@ -41,8 +41,8 @@ const ProfilePage = (props: ProfilePageProps) => {
       return Promise.resolve();
     }
     get(`/api/user`, {}).then((res: userDataResponseType) => {
-      console.log("username returned", res.name);
-      setUsername(res.name);
+      console.log("res", res);
+      setUserInfo(res.data);
     });
   };
 
@@ -59,11 +59,15 @@ const ProfilePage = (props: ProfilePageProps) => {
     window.location.href = "/login";
   }
 
+  if (!userInfo) {
+    return <CircularProgress />;
+  }
+
   return (
     <Flex flexDirection="column" backgroundColor="#faf9f6" minHeight={"100vh"}>
       <Box marginTop="calc(100vh / 6)" marginLeft="calc(100vw / 6)">
         <Typography marginBottom="10px" variant="h4">
-          Username: {username ?? "Anonymous"}
+          Username: {userInfo.name ?? "Anonymous"}
         </Typography>
         <Button
           sx={{
@@ -79,7 +83,7 @@ const ProfilePage = (props: ProfilePageProps) => {
         </Button>
       </Box>
       <EditValueModal
-        curVal={username}
+        curVal={userInfo.name ?? ""}
         title="Edit username"
         maxLength={16}
         onClose={() => {

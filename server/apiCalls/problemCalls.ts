@@ -38,13 +38,13 @@ export async function createSubproblemAttempt(
   ).populate<{ subproblemAttempts: SubproblemAttempt[] }>("subproblemAttempts");
   if (!parentProblemAttempt) {
     // should not happen
-    throw new Error("no parent problem found");
+    throw new Error("no parent attempt found");
   }
   if (parentProblemAttempt.subproblemAttempts.length == NUM_PROBLEMS) {
     throw new Error("should not be creating a new subproblem attempt");
   }
-  if (parentProblemAttempt.subproblemAttempts.length != index) {
-    throw new Error("Something went wrong");
+  if (index >= NUM_PROBLEMS) {
+    throw new Error("invalid subproblem key");
   }
 
   const parentRelayProblem = await RelayProblemModel.findById(
@@ -58,7 +58,7 @@ export async function createSubproblemAttempt(
 
   const nextSubproblemAttempt = new SubproblemAttemptModel({
     parentProblemAttempt: relayProblemAttemptId,
-    subproblem: parentRelayProblem.subproblems[parentProblemAttempt.subproblemAttempts.length],
+    subproblem: parentRelayProblem.subproblems[index],
     assignedUser: userId,
   });
   const savedSubproblemAttempt = await nextSubproblemAttempt.save();
@@ -147,7 +147,7 @@ const loadSubproblemAttempt = async (
     problemAttempt = await RelayProblemAttemptModel.findOne({
       problem: activeProblem,
       team: myTeam,
-    }).populate<{ subproblemAttempts: SubproblemAttempt[] }>("subproblemAttempts");
+    }).populate({ path: "subproblemAttempts", populate: { path: "assignedUser" } });
     if (!!problemAttempt) {
       subproblemAttempt = await SubproblemAttemptModel.findOne({
         parentProblemAttempt: problemAttempt,
@@ -161,24 +161,40 @@ const loadSubproblemAttempt = async (
     console.log("No active problem or team found");
   }
 
+  console.log("problem attempts", problemAttempt);
+
   return res.status(200).json({
     mySubproblemIndex: subproblem?.index ?? -1,
     subproblemData: {
       question: subproblem?.question,
       category: subproblem?.category,
     },
-    subproblemAttempts: problemAttempt?.subproblems,
+    subproblemAttempts:
+      problemAttempt?.subproblemAttempts.map((attempt) => ({
+        assignedUser: {
+          name: attempt.assignedUser.name,
+          email: attempt.assignedUser.email,
+          _id: attempt.assignedUser._id,
+          isAdmin: attempt.assignedUser.isAdmin,
+        },
+        answer: attempt.answer,
+      })) ?? [],
   });
 };
 
 const loadRandomSubproblem = async (req: TypedRequestQuery<{}>, res) => {
-  const randomProblem = await SubproblemModel.findOne();
+  const randomProblems = await SubproblemModel.aggregate([
+    { $sample: { size: 1 } }, // Sample 1 random document
+  ]);
 
   return res.status(200).json({
-    subproblemData: {
-      question: randomProblem?.question,
-      category: randomProblem?.category,
-    },
+    subproblemData:
+      randomProblems.length == 0
+        ? null
+        : {
+          question: randomProblems[0].question,
+          category: randomProblems[0].category,
+        },
   });
 };
 

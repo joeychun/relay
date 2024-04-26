@@ -14,8 +14,6 @@ import {
   lock,
   setTeamNameRequestBodyType,
   setUserNameRequestBodyType,
-  submitSubproblemAttemptRequestBodyType,
-  subproblemAttemptResponseType,
   teamRequestBodyType,
 } from "../../shared/apiTypes";
 
@@ -69,7 +67,9 @@ const loadMyUser = async (
   const myUserId: string = req.user?._id as string;
 
   const user = await getMyUser(myUserId);
-  res.status(200).json({ name: user.name });
+  res
+    .status(200)
+    .json({ data: { name: user.name, email: user.email, _id: user._id, isAdmin: user.isAdmin } });
 };
 
 const setUserName = async (
@@ -84,7 +84,9 @@ const setUserName = async (
   }
   user.name = req.body.name;
   const savedUser = await user.save();
-  res.status(200).json({ name: user.name });
+  res
+    .status(200)
+    .json({ data: { name: user.name, email: user.email, _id: user._id, isAdmin: user.isAdmin } });
 };
 
 const setTeamName = async (
