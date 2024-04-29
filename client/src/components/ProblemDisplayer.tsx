@@ -1,5 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
+import { MathJax } from 'better-react-mathjax';
 
 const Container = styled.div`
   display: flex;
@@ -30,7 +31,7 @@ const ProblemDisplayer = ({ text, image }) => {
   return (
     <Container>
       <TextContainer>
-        <ProblemText>{text}</ProblemText>
+        <ProblemText><MathJax inline>{text}</MathJax></ProblemText>
       </TextContainer>
       {image && (
         <ImageContainer>

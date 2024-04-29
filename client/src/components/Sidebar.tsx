@@ -34,10 +34,10 @@ const InstructionsContainer = styled(Flex)({
 });
 
 const Instructions = styled("div")({
-  width: "200px",
+  width: "400px",
   position: "absolute",
-  top: "calc(80% + 10px)",
-  left: "80%",
+  top: "calc(60% + 10px)",
+  left: "75%",
   transform: "translateX(-50%)",
   backgroundColor: "white",
   padding: "10px",
@@ -66,6 +66,8 @@ const Sidebar = (props: SidebarProps) => {
     setShowInstructions(false);
   };
 
+  const instructions = <p>In <b>Relay</b>, teams solve a series of problems that update daily. Each teammate tackles one problem before passing it to the next; the solution to each problem becomes the starting point for the next one. The routineness of the daily challenge and the collaboration required to reach the final answer makes <b>Relay</b> a low-stakes, fun way to build community through math.</p>;
+
   return (
     <>
       <StyledDrawer variant="permanent" anchor="right">
@@ -73,7 +75,7 @@ const Sidebar = (props: SidebarProps) => {
           <ButtonsContainer>
             <Button
               onClick={() => {
-                handleRedirectButton("/lobby");
+                handleRedirectButton("/");
               }}
             >
               <HomeIcon
@@ -125,7 +127,7 @@ const Sidebar = (props: SidebarProps) => {
         </Flex>
       </StyledDrawer>
       <Instructions style={{ display: showInstructions ? "block" : "none" }}>
-        This is where you can find instructions. TODO
+        {instructions}
       </Instructions>
     </>
   );

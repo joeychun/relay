@@ -36,6 +36,7 @@
     "@types/express-session": "^1.17.3",
     "@types/morgan": "^1.9.2",
     "async-lock": "^1.4.1",
+    "better-react-mathjax": "^2.0.3",
     "copy-to-clipboard": "^3.3.3",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",

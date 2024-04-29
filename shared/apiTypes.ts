@@ -208,6 +208,7 @@ export type TeamWithInfo = {
 export type RelayProblemResult = {
   subproblems: Subproblem[];
   date: Date;
+  status: ProblemStatus;
   subproblemAttemptsWithUsers: SingleSubproblemAttemptWithUserInfo[];
 };
 

@@ -66,7 +66,7 @@ const ProfilePage = (props: ProfilePageProps) => {
     <Flex flexDirection="column" backgroundColor="#faf9f6" minHeight={"100vh"}>
       <Box marginTop="calc(100vh / 6)" marginLeft="calc(100vw / 6)">
         <Typography marginBottom="10px" variant="h4">
-          Username: {userInfo.name ?? "Anonymous"}
+          Username: <b>{userInfo.name ?? "Anonymous"}</b>
         </Typography>
         <Button
           sx={{

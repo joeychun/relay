@@ -24,8 +24,17 @@ import {
   TeamWithInfo,
   teamWithInfoResponseType,
 } from "../../../shared/apiTypes";
+import { MathJaxContext, MathJax } from "better-react-mathjax";
+import IndexPage from "./pages/IndexPage";
 
 const App = () => {
+  const config = {
+    tex2jax: {
+      inlineMath: [["$", "$"]],
+      displayMath: [["$$", "$$"]]
+    }
+  };
+
   const [userId, setUserId] = useState<string | undefined>(undefined);
   const [loginChecked, setLoginChecked] = useState<boolean>(false);
 
@@ -74,29 +83,27 @@ const App = () => {
   // All the pages need to have the props extended via RouteComponentProps for @reach/router to work properly. Please use the Skeleton as an example.
   return (
     <BrowserRouter>
-      <Routes>
-        <Route
-          element={
-            <Skeleton handleLogin={handleLogin} handleLogout={handleLogout} userId={userId} />
-          }
-          path="/"
-        />
-        {/* <Route path="/me" element={<UserPage userId={userId} />} /> */}
-        <Route
-          path="/login"
-          element={
-            <LoginPage handleLogin={handleLogin} handleLogout={handleLogout} userId={userId} />
-          }
-        />
-        <Route path="/lobby" element={<Lobby userId={userId} />} />
-        <Route path="/profile" element={<Profile userId={userId} />} />
-        <Route path="/admin" element={<AdminPage userId={userId} />} />
-        <Route path="/team" element={<TeamPage userId={userId} />} />
-        <Route path="/team-recruit" element={<TeamRecruitingPage userId={userId} />} />
-        <Route path="/problem" element={<Problem userId={userId} />} />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </BrowserRouter>
+      <MathJaxContext config={config} version={3}>
+        <Routes>
+
+          <Route
+            path="/login"
+            element={
+              <LoginPage handleLogin={handleLogin} handleLogout={handleLogout} userId={userId} />
+            }
+          />
+          <Route path="/" element={<IndexPage userId={userId} />} />
+          <Route path="/lobby" element={<Lobby userId={userId} />} />
+          <Route path="/profile" element={<Profile userId={userId} />} />
+          <Route path="/admin" element={<AdminPage userId={userId} />} />
+          <Route path="/team" element={<TeamPage userId={userId} />} />
+          <Route path="/team-recruit" element={<TeamRecruitingPage userId={userId} />} />
+          <Route path="/problem" element={<Problem userId={userId} />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </MathJaxContext>
+    </BrowserRouter >
+
   );
 };
 

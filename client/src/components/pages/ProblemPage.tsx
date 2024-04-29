@@ -13,6 +13,7 @@ import {
 } from "../../../../shared/apiTypes";
 import { get, post } from "../../utilities";
 import { SubproblemCategory } from "../../../../server/models/Problem";
+import { MathJax } from "better-react-mathjax";
 
 const Container = styled.div`
   display: flex;
@@ -146,12 +147,6 @@ const ProblemPage = (props: ProblemPageProps) => {
     }
   }, [userId]);
 
-  useEffect(() => {
-    if (typeof window?.MathJax !== "undefined") {
-      window.MathJax.typeset()
-    }
-  }, [])
-
   if (!userId) {
     // show a dummy
     return (
@@ -163,7 +158,7 @@ const ProblemPage = (props: ProblemPageProps) => {
           justifyContent="center"
           sx={{ gap: 3 }}
         >
-          <ProblemText variant="h5">{randomSubproblem.question}</ProblemText>
+          <ProblemText variant="h5"><MathJax inline>{randomSubproblem.question}</MathJax></ProblemText>
           <Flex
             width="100%"
             flexDirection="column"
@@ -188,7 +183,7 @@ const ProblemPage = (props: ProblemPageProps) => {
     );
   }
 
-  if (!subproblemAttempt || !randomSubproblem) {
+  if (!subproblemAttempt && !randomSubproblem) {
     return <CircularProgress />;
   }
 
@@ -212,7 +207,7 @@ const ProblemPage = (props: ProblemPageProps) => {
             <Typography variant="body1" alignContent={"center"} textAlign={"center"}>
               {`You're all caught up on problems! For now, enjoy this random past problem, or head over to the team page to see your team's statistics.`}
             </Typography>
-            <ProblemText variant="h5">{randomSubproblem.question}</ProblemText>
+            <ProblemText variant="h5"><MathJax inline>{randomSubproblem.question}</MathJax></ProblemText>
 
             <Button
               onClick={() => {
@@ -281,7 +276,7 @@ const ProblemPage = (props: ProblemPageProps) => {
         justifyContent="center"
         sx={{ gap: 3 }}
       >
-        <ProblemText variant="h5">{problemData.question}</ProblemText>
+        <ProblemText variant="h5"><MathJax inline>{problemData.question}</MathJax></ProblemText>
 
         {!previousAttempt ? (
           <Typography variant="body1">You are the first to go!</Typography>

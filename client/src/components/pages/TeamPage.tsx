@@ -251,7 +251,7 @@ const TeamPage = (props: TeamRecruitingPageProps) => {
       get(`/api/team`, {})
         .then((res: teamWithInfoResponseType) => {
           setTeamInfo(res.teamInfo);
-          setRecentProblems(res.recentProblems ?? []);
+          setRecentProblems((!!res.recentProblems) ? res.recentProblems.filter(rp => rp.status === "revealed") : []);
           setTeamIsLoaded(true);
           setDisplayProblemIndex(-1);
         })
@@ -345,6 +345,7 @@ const TeamPage = (props: TeamRecruitingPageProps) => {
   }
 
   const startDateObj = teamInfo.dateStarted ? new Date(teamInfo.dateStarted) : null;
+  console.log(recentProblems);
 
   return (
     <Container>

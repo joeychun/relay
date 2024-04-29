@@ -11,6 +11,7 @@ import {
   TextField,
 } from "@mui/material";
 import { RelayProblemResult } from "../../../../shared/apiTypes";
+import { MathJax } from 'better-react-mathjax';
 
 const Table = styled.table`
   border-collapse: collapse;
@@ -20,6 +21,14 @@ const Table = styled.table`
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 `;
+
+const TableHead = styled.thead`
+  font-size: 18px;
+`
+
+const TableBody = styled.tbody`
+  font-size: 15px;
+`
 
 const TableRow = styled.tr`
   border-bottom: 1px solid #ddd;
@@ -37,12 +46,11 @@ const EmojiCell = styled.th`
 
 const TableCell = styled.td`
   padding: 12px 8px;
-  font-size: 18px;
   align-items: center;
 `;
 
 const TableCellFirst = styled(TableCell)`
-  width: 70%;
+  width: 65%;
 `;
 
 const TableCellSecond = styled(TableCell)`
@@ -51,7 +59,7 @@ const TableCellSecond = styled(TableCell)`
 `;
 
 const TableCellThird = styled(TableCell)`
-  width: 15%;
+  width: 20%;
   text-align: center;
 `;
 
@@ -68,18 +76,10 @@ type ProblemDisplayProps = {
   open: boolean;
   onClose: () => void;
   problemToShow: RelayProblemResult | null;
-  // date: Date;
-  // teamInfo: something;
 };
 
 const ProblemDisplayModal = (props: ProblemDisplayProps) => {
   const problemToShow = props.problemToShow;
-
-  useEffect(() => {
-    if (typeof window?.MathJax !== "undefined") {
-      window.MathJax.typeset()
-    }
-  }, [])
 
   if (!problemToShow) {
     return <></>;
@@ -96,30 +96,31 @@ const ProblemDisplayModal = (props: ProblemDisplayProps) => {
       <DialogTitle>{`Problems for ${dateStr}`}</DialogTitle>
       <DialogContent sx={{ width: "550px" }}>
         <Table>
-          <thead>
+          <TableHead>
             <TableRow>
               <TableCellFirst>Problem</TableCellFirst>
               <TableCellSecond>Correct Answer</TableCellSecond>
-              <TableCellThird>User</TableCellThird>
+              <TableCellSecond>User</TableCellSecond>
               <TableCellThird>User's Answer</TableCellThird>
             </TableRow>
-          </thead>
-          <tbody>
+          </TableHead>
+          <TableBody>
             {problemToShow.subproblemAttemptsWithUsers.map((attempt, index) => {
               const groundTruthSubproblem = problemToShow.subproblems[index];
               return (
                 <TableRow key={index}>
-                  <TableCellFirst>{groundTruthSubproblem.question}</TableCellFirst>
-                  <TableCellSecond>{groundTruthSubproblem.answer}</TableCellSecond>
-                  <TableCellThird>{attempt.assignedUser.name ?? "Anon"}</TableCellThird>
+                  <TableCellFirst><MathJax inline>{groundTruthSubproblem.question}</MathJax></TableCellFirst>
+                  {/* <TableCellFirst><MathJax inline>{"What is \\(3^{999}\\)"}</MathJax></TableCellFirst> */}
+                  <TableCellSecond><b>{groundTruthSubproblem.answer}</b></TableCellSecond>
+                  <TableCellSecond>{attempt.assignedUser.name ?? "Anon"}</TableCellSecond>
                   <TableCellThird>
-                    {attempt.answer ?? "No answer."}{" "}
+                    {attempt.answer ?? "Blank"}{" "}
                     {groundTruthSubproblem.answer == attempt.answer ? "✅" : "❌"}
                   </TableCellThird>
                 </TableRow>
               );
             })}
-          </tbody>
+          </TableBody>
         </Table>
       </DialogContent>
       <DialogActions>

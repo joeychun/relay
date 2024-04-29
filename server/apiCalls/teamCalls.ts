@@ -69,11 +69,11 @@ const getCurrentUserTeam = async (
   // Team is active, also return recent problems
   const mostRecentAttempts = (await RelayProblemAttemptModel.find({ team: team._id }) // Filter by team
     .sort({ createdAt: -1 }) // Sort in descending order based on creation time
-    .limit(5) // Limit the results to 5 documents
     .populate({
       path: "problem", // Populate the 'problem' field
-      select: "date", // Select specific fields from the 'problem' document
+      select: ["date", "status"] // Select specific fields from the 'problem' document
     })
+    .limit(5) // Limit the results to 5 documents
     .populate({
       path: "subproblemAttempts", // Populate the 'subproblemAttempts' field
       populate: [
@@ -84,6 +84,7 @@ const getCurrentUserTeam = async (
 
   const recentProblemData = mostRecentAttempts.map((ra) => ({
     subproblems: ra.subproblemAttempts.map((sa) => sa.subproblem),
+    status: ra.problem.status,
     date: ra.problem.date,
     subproblemAttemptsWithUsers: ra.subproblemAttempts.map((sa) => ({
       _id: sa._id,

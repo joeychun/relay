@@ -4,11 +4,3 @@ declare module "express-serve-static-core" {
     user?: User;
   }
 }
-
-export { };
-
-declare global {
-  interface Window {
-    MathJax: any;
-  }
-}

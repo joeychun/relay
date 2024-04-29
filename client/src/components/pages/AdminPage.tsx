@@ -14,6 +14,7 @@ import {
 import { get, post } from "../../utilities";
 import { CircularProgress } from "@mui/material";
 import { ProblemStatus } from "../../../../server/models/Problem";
+import { MathJax } from "better-react-mathjax";
 
 type AdminPageProps = {
   userId?: string;
@@ -280,7 +281,7 @@ const RecentQuestions = (props: RecentQuestionsProps) => {
             <ul>
               {relayProblem.subproblems.map((subproblem) => (
                 <li key={subproblem._id}>
-                  Question: {subproblem.question}
+                  Question: <MathJax inline>{subproblem.question}</MathJax>
                   <br />
                   Answer: {subproblem.answer}
                 </li>
