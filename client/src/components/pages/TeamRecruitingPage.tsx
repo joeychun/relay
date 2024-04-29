@@ -185,17 +185,21 @@ const TeamRecruitingPage = (props: TeamRecruitingPageProps) => {
   const [isEditTeamNameModalOpen, setIsEditTeamNameModalOpen] = useState(false);
 
   // load current team
-  useEffect(() => {
-    try {
-      if (!!userId) {
-        get(`/api/team`, {}).then((res: teamWithInfoResponseType) => {
+  const loadTeamData = () => {
+    if (!!userId) {
+      get(`/api/team`, {})
+        .then((res: teamWithInfoResponseType) => {
           setTeamInfo(res.teamInfo);
           setTeamIsLoaded(true);
+        })
+        .catch((error) => {
+          console.error("Error fetching team:", error);
         });
-      }
-    } catch (error) {
-      console.error("Error fetching team:", error);
     }
+  };
+
+  useEffect(() => {
+    loadTeamData();
   }, [userId]);
 
   const handleRecruitButtonClick = () => {
@@ -209,8 +213,8 @@ const TeamRecruitingPage = (props: TeamRecruitingPageProps) => {
       teamId: teamInfo._id,
     };
     console.log("Submitting new name:", name);
-    return post("/api/setTeamName", body).then((data: teamWithInfoResponseType) => {
-      setTeamInfo(data.teamInfo);
+    return post("/api/setTeamName", body).then(() => {
+      loadTeamData();
     });
   };
 
@@ -296,7 +300,7 @@ const TeamRecruitingPage = (props: TeamRecruitingPageProps) => {
                 }}
               /> */}
               <Flex sx={{ gap: 2 }}>
-                <Typography variant="h5">{teamInfo.name}</Typography>
+                <Typography variant="h5">{teamInfo.name ?? "No name yet."}</Typography>
                 <Button
                   onClick={() => {
                     setIsEditTeamNameModalOpen(true);

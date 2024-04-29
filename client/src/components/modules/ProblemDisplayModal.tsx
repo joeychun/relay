@@ -10,6 +10,7 @@ import {
   Typography,
   TextField,
 } from "@mui/material";
+import { RelayProblemResult } from "../../../../shared/apiTypes";
 
 const Table = styled.table`
   border-collapse: collapse;
@@ -66,44 +67,58 @@ const TableCellR = styled(TableCell)`
 type ProblemDisplayProps = {
   open: boolean;
   onClose: () => void;
-  title: string;
+  problemToShow: RelayProblemResult | null;
   // date: Date;
   // teamInfo: something;
 };
 
 const ProblemDisplayModal = (props: ProblemDisplayProps) => {
-  const [isDropdownOpen, setDropdownOpen] = useState(false);
+  const problemToShow = props.problemToShow;
 
-  const recentProblems = [
-    { problem: "Problem 1Problem 1Problem 1Problem 1Problem 1Problem 1Problem 1Problem 1Problem 1", correctAnswer: "3", userAnswer: "3 ✅" },
-    { problem: "Problem 2", correctAnswer: "7", userAnswer: "7 ✅" },
-    { problem: "Problem 3", correctAnswer: "9", userAnswer: "2 ❌" },
-  ];
+  useEffect(() => {
+    if (typeof window?.MathJax !== "undefined") {
+      window.MathJax.typeset()
+    }
+  }, [])
 
-  const toggleDropdown = () => {
-    setDropdownOpen(!isDropdownOpen);
-  };
+  if (!problemToShow) {
+    return <></>;
+  }
+
+  const dateStr = new Date(problemToShow.date).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
 
   return (
     <Dialog open={props.open} onClose={props.onClose} sx={{ width: "100%" }}>
-      <DialogTitle>{props.title}</DialogTitle>
+      <DialogTitle>{`Problems for ${dateStr}`}</DialogTitle>
       <DialogContent sx={{ width: "550px" }}>
         <Table>
           <thead>
             <TableRow>
               <TableCellFirst>Problem</TableCellFirst>
               <TableCellSecond>Correct Answer</TableCellSecond>
+              <TableCellThird>User</TableCellThird>
               <TableCellThird>User's Answer</TableCellThird>
             </TableRow>
           </thead>
           <tbody>
-            {recentProblems.map((problem, index) => (
-              <TableRow key={index}>
-                <TableCellFirst>{problem.problem}</TableCellFirst>
-                <TableCellSecond>{problem.correctAnswer}</TableCellSecond>
-                <TableCellThird>{problem.userAnswer}</TableCellThird>
-              </TableRow>
-            ))}
+            {problemToShow.subproblemAttemptsWithUsers.map((attempt, index) => {
+              const groundTruthSubproblem = problemToShow.subproblems[index];
+              return (
+                <TableRow key={index}>
+                  <TableCellFirst>{groundTruthSubproblem.question}</TableCellFirst>
+                  <TableCellSecond>{groundTruthSubproblem.answer}</TableCellSecond>
+                  <TableCellThird>{attempt.assignedUser.name ?? "Anon"}</TableCellThird>
+                  <TableCellThird>
+                    {attempt.answer ?? "No answer."}{" "}
+                    {groundTruthSubproblem.answer == attempt.answer ? "✅" : "❌"}
+                  </TableCellThird>
+                </TableRow>
+              );
+            })}
           </tbody>
         </Table>
       </DialogContent>

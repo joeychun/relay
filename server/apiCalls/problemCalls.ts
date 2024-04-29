@@ -110,13 +110,9 @@ const submitSubproblemAttempt = async (
       // TODO: notify the next user here
     }
 
-    return res.status(200).json({
-      subproblemAttempt: savedAttempt,
-      subproblemData: {
-        question: subproblem.question,
-        category: subproblem.category,
-      },
-    });
+    // return same as in loadSubproblemAttempt
+
+    return res.status(200).json({});
   });
 };
 
@@ -163,38 +159,59 @@ const loadSubproblemAttempt = async (
 
   console.log("problem attempts", problemAttempt);
 
+  if (!subproblem) {
+    return res.status(200).json({
+      data: null,
+    });
+  }
+
   return res.status(200).json({
-    mySubproblemIndex: subproblem?.index ?? -1,
-    subproblemData: {
-      question: subproblem?.question,
-      category: subproblem?.category,
+    data: {
+      mySubproblemIndex: subproblem.index,
+      subproblemData: {
+        question: subproblem.question,
+        category: subproblem.category,
+      },
+      subproblemAttempts:
+        problemAttempt.subproblemAttempts.map((attempt) => ({
+          _id: attempt._id,
+          assignedUser: {
+            name: attempt.assignedUser.name,
+            email: attempt.assignedUser.email,
+            _id: attempt.assignedUser._id,
+            isAdmin: attempt.assignedUser.isAdmin,
+          },
+          answer: attempt.answer,
+        })) ?? [],
     },
-    subproblemAttempts:
-      problemAttempt?.subproblemAttempts.map((attempt) => ({
-        assignedUser: {
-          name: attempt.assignedUser.name,
-          email: attempt.assignedUser.email,
-          _id: attempt.assignedUser._id,
-          isAdmin: attempt.assignedUser.isAdmin,
-        },
-        answer: attempt.answer,
-      })) ?? [],
   });
 };
 
 const loadRandomSubproblem = async (req: TypedRequestQuery<{}>, res) => {
-  const randomProblems = await SubproblemModel.aggregate([
-    { $sample: { size: 1 } }, // Sample 1 random document
+  const revealedProblems = await RelayProblemModel.aggregate([
+    { $match: { status: ProblemStatus.Revealed } },
+    { $sample: { size: 1 } },
   ]);
+  if (revealedProblems.length === 0) {
+    return res.status(200).json({
+      subproblemData: null,
+    });
+  }
+
+  const relayProblem = await RelayProblemModel.findById(revealedProblems[0]._id).populate<{
+    subproblems: Subproblem[];
+  }>("subproblems");
+  if (!relayProblem) {
+    throw new Error("should not happen");
+  }
+
+  const randomSubproblemIndex = Math.floor(Math.random() * relayProblem.subproblems.length);
 
   return res.status(200).json({
-    subproblemData:
-      randomProblems.length == 0
-        ? null
-        : {
-          question: randomProblems[0].question,
-          category: randomProblems[0].category,
-        },
+    subproblemData: {
+      question: relayProblem.subproblems[randomSubproblemIndex].question,
+      category: relayProblem.subproblems[randomSubproblemIndex].category,
+    },
   });
 };
 

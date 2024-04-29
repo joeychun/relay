@@ -31,12 +31,16 @@ router.post("/initsocket", (req, res) => {
 router.get(`/user`, teamCalls.loadMyUser);
 router.post(`/username`, teamCalls.setUserName);
 
+// team creation
 router.post(`/createTeam`, teamCalls.createTeam);
 router.post(`/joinTeam`, teamCalls.joinTeam);
 router.get(`/team`, teamCalls.getCurrentUserTeam);
 router.post(`/setTeamName`, teamCalls.setTeamName);
+
+// problem
 router.get(`/subproblemAttempt`, problemCalls.loadSubproblemAttempt);
 router.get(`/randomSubproblem`, problemCalls.loadRandomSubproblem);
+router.post(`/submitAnswer`, problemCalls.submitSubproblemAttempt);
 
 // admin
 router.get(`/admin/recentProblems`, adminCalls.loadRecentProblems);

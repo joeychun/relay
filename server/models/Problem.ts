@@ -96,11 +96,14 @@ export interface RelayProblemAttempt extends Document {
   subproblemAttempts: Types.ObjectId[];
 }
 
-const RelayProblemAttemptSchema: Schema = new Schema({
-  problem: { type: Schema.Types.ObjectId, ref: "RelayProblem", required: true },
-  team: { type: Schema.Types.ObjectId, ref: "Team", required: true },
-  subproblemAttempts: [{ type: Schema.Types.ObjectId, ref: "SubproblemAttempt" }],
-});
+const RelayProblemAttemptSchema: Schema = new Schema(
+  {
+    problem: { type: Schema.Types.ObjectId, ref: "RelayProblem", required: true },
+    team: { type: Schema.Types.ObjectId, ref: "Team", required: true },
+    subproblemAttempts: [{ type: Schema.Types.ObjectId, ref: "SubproblemAttempt" }],
+  },
+  { timestamps: true }
+);
 
 RelayProblemAttemptSchema.index({ problem: 1, team: 1 }, { unique: true });
 SubproblemAttemptSchema.index({ parentProblemAttempt: 1, subproblem: 1 }, { unique: true });

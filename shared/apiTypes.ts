@@ -126,22 +126,21 @@ export type SubproblemData = {
   question: string;
 };
 
-export interface SubproblemAttemptWithUserInfo extends Document {
+export interface SingleSubproblemAttemptWithUserInfo extends Document {
+  _id: string;
   assignedUser: UserInfo;
   answer?: string; // If answer is not undefined, it means the user has submitted
 }
 
-export type subproblemAttemptResponseType = {
+export type SubproblemAttemptsData = {
   mySubproblemIndex: number;
   subproblemData: SubproblemData;
-  subproblemAttempts: SubproblemAttemptWithUserInfo[];
+  subproblemAttempts: SingleSubproblemAttemptWithUserInfo[];
 };
 
-// export enum ProblemResultType {
-//   Correct = "correct",
-//   Incorrect = "incorrect",
-//   Unanswered = "unanswered",
-// }
+export type subproblemAttemptResponseType = {
+  data: SubproblemAttemptsData | null;
+};
 
 export type loadProblemResultsResponseType = {
   relayProblem: RelayProblem;
@@ -206,6 +205,13 @@ export type TeamWithInfo = {
   currentStreak: number;
 };
 
+export type RelayProblemResult = {
+  subproblems: Subproblem[];
+  date: Date;
+  subproblemAttemptsWithUsers: SingleSubproblemAttemptWithUserInfo[];
+};
+
 export type teamWithInfoResponseType = {
   teamInfo: TeamWithInfo | null;
+  recentProblems: RelayProblemResult[] | null;
 };

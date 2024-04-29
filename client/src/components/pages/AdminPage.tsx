@@ -56,9 +56,9 @@ const AdminPage = (props: AdminPageProps) => {
       problemId,
     };
     return post("/api/admin/publishProblem", body)
-      .then((res: recentProblemResponseType) => {
+      .then(() => {
         setMsg(`Published question with id ${problemId}`);
-        setRecentProblems(res.problems);
+        loadRecentQuestions();
       })
       .catch((e) => {
         setErrorMsg(`Something went wrong while publishing ${e}.`);
@@ -69,18 +69,18 @@ const AdminPage = (props: AdminPageProps) => {
     // Handle release answer action
     console.log("Release answer for question:", problemId);
     // TODO: finish hooking up
-    // if (!problemId || !userId) return Promise.resolve();
-    // const body: updateProblemStatusRequestBodyType = {
-    //   problemId,
-    // };
-    // return post("/api/admin/releaseAnswer", body)
-    //   .then((res: recentProblemResponseType) => {
-    //     setMsg(`Released answers for question with id ${problemId}`);
-    //     setRecentProblems(res.problems);
-    //   })
-    //   .catch((e) => {
-    //     setErrorMsg(`Something went wrong while releasing answers ${e}.`);
-    //   });
+    if (!problemId || !userId) return Promise.resolve();
+    const body: updateProblemStatusRequestBodyType = {
+      problemId,
+    };
+    return post("/api/admin/releaseAnswer", body)
+      .then(() => {
+        setMsg(`Released answers for question with id ${problemId}`);
+        loadRecentQuestions();
+      })
+      .catch((e) => {
+        setErrorMsg(`Something went wrong while releasing answers ${e}.`);
+      });
   };
 
   const handleCreateProblem = (questionData: QuestionData[], date: Date) => {
@@ -92,9 +92,9 @@ const AdminPage = (props: AdminPageProps) => {
       date,
     };
     return post("/api/admin/createProblem", body)
-      .then((res: recentProblemResponseType) => {
+      .then(() => {
         setMsg(`Created question`);
-        setRecentProblems(res.problems);
+        loadRecentQuestions();
       })
       .catch((e) => {
         setErrorMsg(`Something went wrong while creating ${e}.`);
@@ -106,7 +106,7 @@ const AdminPage = (props: AdminPageProps) => {
       loadUser();
       loadRecentQuestions();
     } catch (error) {
-      console.error("Error fetching user data:", error);
+      console.error("Error fetching admin data:", error);
     }
   }, [userId]);
 

@@ -29,9 +29,8 @@ const ProfilePage = (props: ProfilePageProps) => {
       name,
     };
     console.log("Submitting new name:", name);
-    return post("/api/username", body).then((res: userDataResponseType) => {
-      console.log("updating username");
-      setUserInfo(res.data);
+    return post("/api/username", body).then(() => {
+      loadUser();
     });
   };
 
@@ -40,18 +39,18 @@ const ProfilePage = (props: ProfilePageProps) => {
       console.log("No user id to load");
       return Promise.resolve();
     }
-    get(`/api/user`, {}).then((res: userDataResponseType) => {
-      console.log("res", res);
-      setUserInfo(res.data);
-    });
+    get(`/api/user`, {})
+      .then((res: userDataResponseType) => {
+        console.log("res", res);
+        setUserInfo(res.data);
+      })
+      .catch((error) => {
+        console.error("Error fetching user data:", error);
+      });
   };
 
   useEffect(() => {
-    try {
-      loadUser();
-    } catch (error) {
-      console.error("Error fetching user data:", error);
-    }
+    loadUser();
   }, [userId]);
 
   // TODO: add this to every page

@@ -6,10 +6,12 @@ import ProblemDisplayer from "../ProblemDisplayer";
 import { Flex } from "rebass/styled-components";
 import {
   NUM_PROBLEMS,
+  SubproblemAttemptsData,
   SubproblemData,
+  submitSubproblemAttemptRequestBodyType,
   subproblemAttemptResponseType,
 } from "../../../../shared/apiTypes";
-import { get } from "../../utilities";
+import { get, post } from "../../utilities";
 import { SubproblemCategory } from "../../../../server/models/Problem";
 
 const Container = styled.div`
@@ -95,9 +97,7 @@ const ProblemPage = (props: ProblemPageProps) => {
   const userId = props.userId;
 
   const [userAnswer, setUserAnswer] = useState("");
-  const [subproblemAttempt, setSubproblemAttempt] = useState<subproblemAttemptResponseType | null>(
-    null
-  );
+  const [subproblemAttempt, setSubproblemAttempt] = useState<SubproblemAttemptsData | null>(null);
 
   // TODO: add a real question here
   const [randomSubproblem, setRandomSubproblem] = useState<SubproblemData>({
@@ -105,28 +105,30 @@ const ProblemPage = (props: ProblemPageProps) => {
     category: SubproblemCategory.Other,
   });
 
-  const handleSubmit = (userAnswer: string) => {
-    // Handle form submission, e.g., submit the user's answer to the server
-    // TODO: hook up submit
-    console.log("User submitted answer:", userAnswer);
+  const loadSubproblemData = () => {
+    if (!!userId) {
+      get(`/api/subproblemAttempt`, {})
+        .then((res: subproblemAttemptResponseType) => {
+          if (!!res.data) {
+            const data = res.data;
+            if (
+              data.mySubproblemIndex < 0 ||
+              (data.mySubproblemIndex >= 0 && data.subproblemAttempts.length != NUM_PROBLEMS)
+            ) {
+              throw new Error("Subproblem attempts wrong");
+            }
+            setSubproblemAttempt(data);
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching subproblem data:", error);
+        });
+    }
   };
 
   // load attempt
   useEffect(() => {
-    try {
-      if (!!userId) {
-        get(`/api/subproblemAttempt`, {}).then((res: subproblemAttemptResponseType) => {
-          if (res.mySubproblemIndex >= 0 && res.subproblemAttempts.length != NUM_PROBLEMS) {
-            throw new Error("Subproblem attempts wrong");
-          }
-          if (res.mySubproblemIndex != -1) {
-            setSubproblemAttempt(res);
-          }
-        });
-      }
-    } catch (error) {
-      console.error("Error fetching team:", error);
-    }
+    loadSubproblemData();
   }, [userId]);
 
   useEffect(() => {
@@ -144,9 +146,11 @@ const ProblemPage = (props: ProblemPageProps) => {
     }
   }, [userId]);
 
-  if (!subproblemAttempt && !randomSubproblem) {
-    return <CircularProgress />;
-  }
+  useEffect(() => {
+    if (typeof window?.MathJax !== "undefined") {
+      window.MathJax.typeset()
+    }
+  }, [])
 
   if (!userId) {
     // show a dummy
@@ -184,6 +188,10 @@ const ProblemPage = (props: ProblemPageProps) => {
     );
   }
 
+  if (!subproblemAttempt || !randomSubproblem) {
+    return <CircularProgress />;
+  }
+
   if (!subproblemAttempt) {
     return (
       <Container>
@@ -202,7 +210,7 @@ const ProblemPage = (props: ProblemPageProps) => {
             sx={{ gap: 3 }}
           >
             <Typography variant="body1" alignContent={"center"} textAlign={"center"}>
-              {`You're all caught up on problems! For now, enjoy this random problem, or head over to the team page to see your team's statistics.`}
+              {`You're all caught up on problems! For now, enjoy this random past problem, or head over to the team page to see your team's statistics.`}
             </Typography>
             <ProblemText variant="h5">{randomSubproblem.question}</ProblemText>
 
@@ -223,10 +231,29 @@ const ProblemPage = (props: ProblemPageProps) => {
   const mySubproblemIndex = subproblemAttempt.mySubproblemIndex;
   const allSubproblemAttempts = subproblemAttempt.subproblemAttempts;
   const problemData = subproblemAttempt.subproblemData;
-  const myAttempt = mySubproblemIndex != -1 ? allSubproblemAttempts[mySubproblemIndex] : null;
+  const myAttempt = allSubproblemAttempts[mySubproblemIndex];
   const previousAttempt =
     mySubproblemIndex > 0 ? allSubproblemAttempts[mySubproblemIndex - 1] : null;
   console.log(mySubproblemIndex, allSubproblemAttempts, problemData, myAttempt, previousAttempt);
+
+  const handleSubmit = (userAnswer: string) => {
+    // Handle form submission, e.g., submit the user's answer to the server
+    console.log("User submitted answer:", userAnswer);
+    if (!userId) return Promise.resolve();
+    const body: submitSubproblemAttemptRequestBodyType = {
+      subproblemAttemptId: myAttempt._id,
+      answer: userAnswer,
+    };
+    return post("/api/submitAnswer", body).then(() => {
+      loadSubproblemData();
+    });
+  };
+
+  const handleSendBack = (subproblemAttemptId: string) => {
+    console.log("Sending back:", subproblemAttemptId);
+    // TODO: hook up email
+  };
+
   // TODO: make a username module
   return (
     <Container>
@@ -291,10 +318,24 @@ const ProblemPage = (props: ProblemPageProps) => {
               }}
             />
           </Box>
-          <Button onClick={() => handleSubmit(userAnswer)}>Submit</Button>
+          <Button variant="contained" onClick={() => handleSubmit(userAnswer)}>
+            Submit
+          </Button>
+
           <Typography variant="body1">
             Last submission: {myAttempt?.answer ?? "No submission yet."}
           </Typography>
+
+          {!!previousAttempt && (
+            <Flex mt={10} flexDirection="column" sx={{ gap: 1 }} alignItems="center">
+              <Typography variant="caption">
+                Something seem wrong with the answers your teammate sent? Ask them to check again!
+              </Typography>
+              <Box>
+                <Button onClick={() => handleSendBack(previousAttempt._id)}>Send back</Button>
+              </Box>
+            </Flex>
+          )}
         </Flex>
       </Flex>
 

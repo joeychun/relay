@@ -21,7 +21,12 @@ import { TypedRequestBody } from "../../shared/apiTypes";
 import socketManager from "../server-socket";
 import mongoose, { Types, UpdateWriteOpResult } from "mongoose";
 import { Team, TeamModel, TeamStatus } from "../models/Team";
-import { ProblemStatus, RelayProblemAttemptModel, RelayProblemModel } from "../models/Problem";
+import {
+  ProblemStatus,
+  RelayProblemAttemptModel,
+  RelayProblemModel,
+  SubproblemAttempt,
+} from "../models/Problem";
 import { createRelayProblemAttempt } from "./adminCalls";
 
 function formatTeamWithInfo(teamWithUsers) {
@@ -55,9 +60,46 @@ const getCurrentUserTeam = async (
   if (!team) {
     return res.status(200).json({ teamInfo: null });
   }
-  const teamWithUsers = await getTeamWithUsers(team.id);
+  const teamWithUsers = await getTeamWithUsers(team._id);
+  const formattedTeamInfo = formatTeamWithInfo(teamWithUsers);
 
-  return res.status(200).json(formatTeamWithInfo(teamWithUsers));
+  if (teamWithUsers.status != TeamStatus.Active) {
+    return res.status(200).json(formattedTeamInfo);
+  }
+  // Team is active, also return recent problems
+  const mostRecentAttempts = (await RelayProblemAttemptModel.find({ team: team._id }) // Filter by team
+    .sort({ createdAt: -1 }) // Sort in descending order based on creation time
+    .limit(5) // Limit the results to 5 documents
+    .populate({
+      path: "problem", // Populate the 'problem' field
+      select: "date", // Select specific fields from the 'problem' document
+    })
+    .populate({
+      path: "subproblemAttempts", // Populate the 'subproblemAttempts' field
+      populate: [
+        { path: "assignedUser" }, // Populate the 'assignedUser' field within each 'SubproblemAttempt'
+        { path: "subproblem" }, // Populate the 'subproblem' field within each 'SubproblemAttempt'
+      ],
+    })) as any[];
+
+  const recentProblemData = mostRecentAttempts.map((ra) => ({
+    subproblems: ra.subproblemAttempts.map((sa) => sa.subproblem),
+    date: ra.problem.date,
+    subproblemAttemptsWithUsers: ra.subproblemAttempts.map((sa) => ({
+      _id: sa._id,
+      assignedUser: {
+        name: sa.assignedUser.name,
+        email: sa.assignedUser.email,
+        _id: sa.assignedUser._id,
+        isAdmin: sa.assignedUser.isAdmin,
+      },
+      answer: sa.answer,
+    })),
+  }));
+
+  return res
+    .status(200)
+    .json({ teamInfo: formattedTeamInfo.teamInfo, recentProblems: recentProblemData });
 };
 
 const loadMyUser = async (
@@ -84,9 +126,7 @@ const setUserName = async (
   }
   user.name = req.body.name;
   const savedUser = await user.save();
-  res
-    .status(200)
-    .json({ data: { name: user.name, email: user.email, _id: user._id, isAdmin: user.isAdmin } });
+  res.status(200).json({});
 };
 
 const setTeamName = async (
@@ -106,7 +146,7 @@ const setTeamName = async (
   }
   team.name = req.body.name;
   const savedTeam = await team.save();
-  res.status(200).json(formatTeamWithInfo(savedTeam));
+  res.status(200).json({});
 };
 
 function generateRandomCode() {

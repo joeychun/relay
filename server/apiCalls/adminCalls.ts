@@ -163,7 +163,9 @@ async function gradeRelayProblemAttempt(relayProblemAttemptId: string) {
     // should not happen
     throw new Error("no parent problem found");
   }
-  const parentRelayProblem = await RelayProblemModel.findById(parentProblemAttempt).populate<{
+  const parentRelayProblem = await RelayProblemModel.findById(
+    parentProblemAttempt.problem
+  ).populate<{
     subproblems: Subproblem[];
   }>("subproblems");
   if (!parentRelayProblem) {
@@ -229,14 +231,7 @@ const publishProblem = async (
   thisProblem.status = ProblemStatus.Active;
   await thisProblem.save();
 
-  const problems = await RelayProblemModel.find({})
-    .populate<{
-      subproblems: Subproblem[];
-    }>("subproblems")
-    .sort({ date: -1 }) // sort by date in desc order
-    .limit(5); // get the latest five
-
-  return res.status(200).json({ problems });
+  return res.status(200).json({});
 
   // later can use a script to automatically release at midnight, but for now use manual release
   // for all *active* teams, create a RelayProblemAttempt
@@ -264,30 +259,19 @@ const releaseAnswer = async (
     problem: savedProblem,
   });
 
-  // TODO: use lock?
-  var errorFromCreating;
-  await Promise.all(relayProblemAttempts.map((attempt) => gradeRelayProblemAttempt(attempt._id)))
-    .then((results) => {
-      console.log("Success", results);
-    })
-    .catch((error) => {
-      console.log("ERROR WHEN CREATING", error);
-      error = errorFromCreating;
-    });
+  try {
+    await Promise.all(relayProblemAttempts.map((attempt) => gradeRelayProblemAttempt(attempt._id)));
+    // If all promises are resolved successfully, continue processing
+    // Send a success response if needed
+    console.log(`Problem with id ${req.body.problemId} revealed`);
 
-  if (!!errorFromCreating) {
-    res.status(400).json({ error: errorFromCreating });
+    res.status(200).json({});
+  } catch (error) {
+    // If any promise is rejected, handle the error here
+    console.log("ERROR WHEN RELEASING", error);
+    res.status(400).json({ error }); // Send a 400 response with the error message
     return;
   }
-  console.log(`Problem with id ${req.body.problemId} revealed`);
-  const problems = await RelayProblemModel.find({})
-    .populate<{
-      subproblems: Subproblem[];
-    }>("subproblems")
-    .sort({ date: -1 }) // sort by date in desc order
-    .limit(5); // get the latest five
-
-  return res.status(200).json({ problems });
 };
 
 const loadRecentProblems = async (

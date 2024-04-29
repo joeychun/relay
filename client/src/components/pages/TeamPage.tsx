@@ -6,8 +6,10 @@ import EditIcon from "@mui/icons-material/Edit";
 import Sidebar from "../Sidebar";
 import {
   NUM_PROBLEMS,
+  RelayProblemResult,
   Team,
   TeamWithInfo,
+  setTeamNameRequestBodyType,
   teamResponseType,
   teamWithInfoResponseType,
 } from "../../../../shared/apiTypes";
@@ -16,7 +18,8 @@ import { Flex } from "rebass/styled-components";
 import { TeamStatus } from "../../../../server/models/Team";
 import { CircularProgress, Typography } from "@mui/material";
 import ProblemDisplayModal from "../modules/ProblemDisplayModal";
-import { get } from "../../utilities";
+import { get, post } from "../../utilities";
+import EditValueModal from "../modules/EditValueModal";
 
 const Container = styled.div`
   display: flex;
@@ -210,7 +213,6 @@ const StyledButton2 = styled(Button)`
   }
 `;
 
-
 type TeamRecruitingPageProps = {
   userId?: string;
 };
@@ -218,42 +220,53 @@ type TeamRecruitingPageProps = {
 const TeamPage = (props: TeamRecruitingPageProps) => {
   const userId = props.userId;
   const [teamInfo, setTeamInfo] = useState<TeamWithInfo | null>(null);
+  const [recentProblems, setRecentProblems] = useState<RelayProblemResult[]>([]);
   const [teamIsLoaded, setTeamIsLoaded] = useState<boolean>(false);
   const [isProblemDisplayModalOpen, setIsProblemDisplayOpen] = useState<boolean>(false);
-  const [problemDisplayDate, setProblemDisplayDate] = useState<string | null>(null);
+  const [displayProblemIndex, setDisplayProblemIndex] = useState(-1);
   const [isDropdownOpen, setDropdownOpen] = useState<boolean>(false);
-  const [teamName, setTeamName] = useState("Team Name");
+  const [isEditTeamNameModalOpen, setIsEditTeamNameModalOpen] = useState(false);
 
-  const teammates = ["User 1", "User 2", "User 3"];
-  const latestStreak = 5;
-  const longestStreak = 8;
+  function generateResultString(problemResult: RelayProblemResult): string {
+    const { subproblems, subproblemAttemptsWithUsers } = problemResult;
+    let resultString = "";
 
-  const recentProblems = [
-    { date: "4/24/2024", results: "✅✅✅" },
-    { date: "4/23/2024", results: "✅✅✅" },
-    { date: "4/22/2024", results: "✅✅❌" },
-  ];
+    subproblems.forEach((subproblem, index) => {
+      const subproblemAttempt = subproblemAttemptsWithUsers[index];
+      if (!subproblemAttempt.answer) {
+        resultString += "❌";
+      } else if (subproblemAttempt.answer === subproblem.answer) {
+        resultString += "✅";
+      } else {
+        resultString += "❌";
+      }
+    });
+
+    return resultString;
+  }
 
   // load current team
-  useEffect(() => {
-    try {
-      if (!!userId) {
-        get(`/api/team`, {}).then((res: teamWithInfoResponseType) => {
+  const loadTeamData = () => {
+    if (!!userId) {
+      get(`/api/team`, {})
+        .then((res: teamWithInfoResponseType) => {
           setTeamInfo(res.teamInfo);
+          setRecentProblems(res.recentProblems ?? []);
           setTeamIsLoaded(true);
+          setDisplayProblemIndex(-1);
+        })
+        .catch((error) => {
+          console.error("Error fetching team:", error);
         });
-      }
-    } catch (error) {
-      console.error("Error fetching team:", error);
     }
+  };
+
+  useEffect(() => {
+    loadTeamData();
   }, [userId]);
 
   const toggleDropdown = () => {
     setDropdownOpen(!isDropdownOpen);
-  };
-
-  const handleTeamNameChange = (event) => {
-    setTeamName(event.target.value);
   };
 
   if (!userId) {
@@ -264,16 +277,38 @@ const TeamPage = (props: TeamRecruitingPageProps) => {
     return <CircularProgress />;
   }
 
+  const handleSubmitNewTeamName = (name: string) => {
+    if (!userId || !teamInfo?._id) return Promise.resolve();
+    const body: setTeamNameRequestBodyType = {
+      name,
+      teamId: teamInfo._id,
+    };
+    console.log("Submitting new name:", name);
+    return post("/api/setTeamName", body).then(() => {
+      loadTeamData();
+    });
+  };
+
   // TODO: ADD state for if no team here. maybe a button to take you back to the lobby?
   if (!teamInfo) {
     return (
-      <Flex backgroundColor="#faf9f6" color="black" flexDirection="column"> {/* Changed flexDirection to column */}
-        <Flex justifyContent="center" alignItems="center" height="100vh" width="100%"> {/* Decreased height to 80vh */}
-          <Flex flexDirection="column" alignItems="center"> {/* Changed flexDirection to column */}
+      <Flex backgroundColor="#faf9f6" color="black" flexDirection="column">
+        {" "}
+        {/* Changed flexDirection to column */}
+        <Flex justifyContent="center" alignItems="center" height="100vh" width="100%">
+          {" "}
+          {/* Decreased height to 80vh */}
+          <Flex flexDirection="column" alignItems="center">
+            {" "}
+            {/* Changed flexDirection to column */}
             <Typography variant="h5">You don't have a team. Go back to lobby:</Typography>
-            <StyledButton2 variant="contained" color="primary" onClick={() => window.location.href = "/lobby"}>
+            <StyledButton2
+              variant="contained"
+              color="primary"
+              onClick={() => (window.location.href = "/lobby")}
+            >
               Lobby Page
-              </StyledButton2>
+            </StyledButton2>
           </Flex>
         </Flex>
         <Sidebar />
@@ -283,11 +318,23 @@ const TeamPage = (props: TeamRecruitingPageProps) => {
 
   if (teamInfo.status === TeamStatus.Recruiting) {
     return (
-      <Flex backgroundColor="#faf9f6" color="black" flexDirection="column"> {/* Changed flexDirection to column */}
-        <Flex justifyContent="center" alignItems="center" height="100vh" width="100%"> {/* Decreased height to 80vh */}
-          <Flex flexDirection="column" alignItems="center"> {/* Changed flexDirection to column */}
-            <Typography variant="h5">Your team is under recruiting! Get a full team first:</Typography>
-            <StyledButton2 variant="contained" color="primary" onClick={() => window.location.href = "/team-recruit"}>
+      <Flex backgroundColor="#faf9f6" color="black" flexDirection="column">
+        {" "}
+        {/* Changed flexDirection to column */}
+        <Flex justifyContent="center" alignItems="center" height="100vh" width="100%">
+          {" "}
+          {/* Decreased height to 80vh */}
+          <Flex flexDirection="column" alignItems="center">
+            {" "}
+            {/* Changed flexDirection to column */}
+            <Typography variant="h5">
+              Your team is under recruiting! Get a full team first:
+            </Typography>
+            <StyledButton2
+              variant="contained"
+              color="primary"
+              onClick={() => (window.location.href = "/team-recruit")}
+            >
               Recruiting Page
             </StyledButton2>
           </Flex>
@@ -297,24 +344,28 @@ const TeamPage = (props: TeamRecruitingPageProps) => {
     );
   }
 
+  const startDateObj = teamInfo.dateStarted ? new Date(teamInfo.dateStarted) : null;
+
   return (
     <Container>
       <Content>
         <InnerContainer>
           <TeamContainer>
             <TeamInfoContainer>
-              <EditableTeamName
-                value={teamName}
-                variant="standard"
-                onChange={handleTeamNameChange}
-                InputProps={{
-                  endAdornment: <EditIcon color="primary" style={{ cursor: "pointer" }} />,
-                }}
-              />
+              <Flex sx={{ gap: 2 }}>
+                <Typography variant="h5">{teamInfo.name ?? "No name yet."}</Typography>
+                <Button
+                  onClick={() => {
+                    setIsEditTeamNameModalOpen(true);
+                  }}
+                >
+                  <EditIcon color="primary" />
+                </Button>
+              </Flex>
               <ul>
-                {teammates.map((teammate, index) => (
+                {teamInfo.users.map((teammate, index) => (
                   <li key={index}>
-                    <UserName>{teammate}</UserName>
+                    <UserName>{teammate.name ?? `Anon ${index}`}</UserName>
                   </li>
                 ))}
               </ul>
@@ -331,25 +382,44 @@ const TeamPage = (props: TeamRecruitingPageProps) => {
                 </TableRow>
               </thead>
               <tbody>
+                {!!startDateObj && (
+                  <TableRow>
+                    <EmojiCell>🕒</EmojiCell>
+                    <TableCell>Active since</TableCell>
+                    <TableCellR>
+                      <b>
+                        {startDateObj.toLocaleDateString("en-US", {
+                          weekday: "long",
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        })}
+                      </b>
+                    </TableCellR>
+                  </TableRow>
+                )}
+
                 <TableRow>
                   <EmojiCell>🕒</EmojiCell>
                   <TableCell>Latest Streak</TableCell>
                   <TableCellR>
-                    <b>{latestStreak}</b>
+                    <b>{teamInfo.currentStreak}</b>
                   </TableCellR>
                 </TableRow>
                 <TableRow>
                   <EmojiCell>🔥</EmojiCell>
                   <TableCell>Longest Streak</TableCell>
                   <TableCellR>
-                    <b>{longestStreak}</b>
+                    <b>{teamInfo.longestStreak}</b>
                   </TableCellR>
                 </TableRow>
-                <TableRow>
-                  <EmojiCell>❓</EmojiCell>
-                  <TableCell>Latest Results</TableCell>
-                  <TableCellR>✅✅❌</TableCellR>
-                </TableRow>
+                {recentProblems.length > 0 && (
+                  <TableRow>
+                    <EmojiCell>❓</EmojiCell>
+                    <TableCell>Latest Results</TableCell>
+                    <TableCellR>{generateResultString(recentProblems[0])}</TableCellR>
+                  </TableRow>
+                )}
               </tbody>
             </Table>
           </StatsContainer>
@@ -369,29 +439,44 @@ const TeamPage = (props: TeamRecruitingPageProps) => {
             </DropdownIcon>
           </DropdownHeader>
           <DropdownContent style={{ display: isDropdownOpen ? "block" : "none" }}>
-            <Table>
-              <thead>
-                <TableRow>
-                  <TableCell>Relay Date</TableCell>
-                  <TableCell>Results</TableCell>
-                </TableRow>
-              </thead>
-              <tbody>
-                {recentProblems.map((problem, index) => (
-                  <RelayTableRow key={index} onClick={() => {
-                    setIsProblemDisplayOpen(!isProblemDisplayModalOpen);
-                    setProblemDisplayDate(problem.date);
-                  }}>
-                    <TableCell>{problem.date}</TableCell>
-                    <TableCell>{problem.results}</TableCell>
-                  </RelayTableRow>
-                ))}
-              </tbody>
-            </Table>
+            {recentProblems.length == 0 ? (
+              <b>Nothing yet.</b>
+            ) : (
+              <Table>
+                <thead>
+                  <TableRow>
+                    <TableCell>Relay Date</TableCell>
+                    <TableCell>Results</TableCell>
+                  </TableRow>
+                </thead>
+                <tbody>
+                  {recentProblems.map((problemResult, index) => {
+                    return (
+                      <RelayTableRow
+                        key={index}
+                        onClick={() => {
+                          setDisplayProblemIndex(index);
+                          setIsProblemDisplayOpen(!isProblemDisplayModalOpen);
+                        }}
+                      >
+                        <TableCell>
+                          {new Date(problemResult.date).toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                          })}
+                        </TableCell>
+                        <TableCell>{generateResultString(problemResult)}</TableCell>
+                      </RelayTableRow>
+                    );
+                  })}
+                </tbody>
+              </Table>
+            )}
           </DropdownContent>
         </DropdownContainer>
         <ProblemDisplayModal
-          title={`Problems for ${problemDisplayDate}`}
+          problemToShow={displayProblemIndex == -1 ? null : recentProblems[displayProblemIndex]}
           // date={}
           onClose={() => {
             setIsProblemDisplayOpen(false);
@@ -400,6 +485,16 @@ const TeamPage = (props: TeamRecruitingPageProps) => {
         />
       </Content>
       <Sidebar />
+      <EditValueModal
+        curVal={teamInfo.name}
+        title="Edit team name"
+        maxLength={16}
+        onClose={() => {
+          setIsEditTeamNameModalOpen(false);
+        }}
+        open={isEditTeamNameModalOpen}
+        handleEditVal={handleSubmitNewTeamName}
+      />
     </Container>
   );
 };
