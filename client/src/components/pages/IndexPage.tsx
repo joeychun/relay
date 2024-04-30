@@ -13,6 +13,7 @@ import {
 } from "../../../../shared/apiTypes";
 import { TeamStatus } from "../../../../server/models/Team";
 import { get } from "../../utilities";
+import { CircularProgress } from "@mui/material";
 
 
 type IndexPageProps = {
@@ -34,16 +35,23 @@ const IndexPage = (props: IndexPageProps) => {
         })
         .catch((error) => {
           console.error("Error fetching team:", error);
+          console.log("error while running function loadedteam");
         });
     }
   };
 
   useEffect(() => {
     loadTeamData();
+    console.log("loadedteam");
+    console.log("teamIsLoaded: ", teamIsLoaded);
   }, [userId]);
 
+  if (!userId) {
+    window.location.href = "/login";
+  }
+
   if (!teamIsLoaded) {
-    return <></>;
+    return <CircularProgress />;
   } else {
     if (!teamInfo) {
       return <Navigate to="/lobby" />;

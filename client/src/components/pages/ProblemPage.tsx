@@ -86,6 +86,23 @@ const SubmitButton = styled(Button)`
   }
 `;
 
+const StyledButton2 = styled(Button)`
+  && {
+    width: 20%;
+    height: 50px;
+    margin-top: 16px;
+    margin-bottom: 16px;
+    font-size: 14px;
+    background-color: #ffd166;
+    color: #000000;
+    border-radius: 10px;
+    box-shadow: 0px 3px 5px rgba(0, 0, 0, 0.2);
+    &:hover {
+      background-color: #ffd700;
+    }
+  }
+`;
+
 const EmptyDiv = styled.div`
   height: 20px;
 `;
@@ -209,13 +226,16 @@ const ProblemPage = (props: ProblemPageProps) => {
             </Typography>
             <ProblemText variant="h5"><MathJax inline>{randomSubproblem.question}</MathJax></ProblemText>
 
-            <Button
+            {/* <Button
               onClick={() => {
                 window.location.href = "/team";
               }}
             >
               Take me to the team page!
-            </Button>
+            </Button> */}
+            <StyledButton2 variant="contained" color="primary" onClick={() => window.location.href = "/team"}>
+              Take me to the team page!
+            </StyledButton2>
           </Flex>
         </Flex>
         <Sidebar />

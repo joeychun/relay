@@ -22,10 +22,15 @@ import { get, post } from "../../utilities";
 import EditValueModal from "../modules/EditValueModal";
 
 const Container = styled.div`
-  display: flex;
   min-height: 100vh;
   background-color: #faf9f6;
   color: #000000;
+  display: flex;
+  flex-grow: 1;
+  justify-content: center; /* Align content to the start */
+  align-items: center; /* Align content to the start */
+  flex-direction: column;
+  overflow: auto; /* Enable scrolling if content overflows */
 `;
 
 const Content = styled.main`
@@ -33,7 +38,7 @@ const Content = styled.main`
   display: flex;
   justify-content: center;
   align-items: center;
-  flex-direction: column;
+  flex-direction: row;
 `;
 
 const InnerContainer = styled.div`
@@ -44,18 +49,35 @@ const InnerContainer = styled.div`
   justify-content: space-between;
 `;
 
+const ComponentsWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+`;
+
+const TeamComponentWrapper = styled.div`
+  width: 100%;
+  margin-bottom: 20px;
+`;
+
+const StatsComponentWrapper = styled.div`
+  width: 100%;
+`;
+
 const TeamContainer = styled.div`
   display: flex;
+  width: 370px;
   flex-direction: column;
   align-items: flex-start;
   margin-right: 72px;
 `;
 
 const TeamInfoContainer = styled.div`
+// display: flex;
+  width: calc(100% - 60px);
   background-color: #ffffff;
   border-radius: 8px;
   padding: 30px;
-  padding-right: 100px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   margin-bottom: 0px;
 `;
@@ -160,6 +182,7 @@ const DropdownContainer = styled.div`
   max-width: 850px;
   margin-top: 24px;
   position: relative;
+  display: flex;
 `;
 
 const DropdownHeader = styled.div`
@@ -181,7 +204,7 @@ const DropdownIcon = styled.svg`
 `;
 
 const DropdownContent = styled.div`
-  display: none;
+  display: flex;
   position: absolute;
   top: 100%;
   left: 0;
@@ -224,7 +247,7 @@ const TeamPage = (props: TeamRecruitingPageProps) => {
   const [teamIsLoaded, setTeamIsLoaded] = useState<boolean>(false);
   const [isProblemDisplayModalOpen, setIsProblemDisplayOpen] = useState<boolean>(false);
   const [displayProblemIndex, setDisplayProblemIndex] = useState(-1);
-  const [isDropdownOpen, setDropdownOpen] = useState<boolean>(false);
+  const [isDropdownOpen, setDropdownOpen] = useState<boolean>(true);
   const [isEditTeamNameModalOpen, setIsEditTeamNameModalOpen] = useState(false);
 
   function generateResultString(problemResult: RelayProblemResult): string {
@@ -345,137 +368,155 @@ const TeamPage = (props: TeamRecruitingPageProps) => {
   }
 
   const startDateObj = teamInfo.dateStarted ? new Date(teamInfo.dateStarted) : null;
-  console.log(recentProblems);
+
+  const TeamComponent = () => (<TeamContainer>
+    <TeamInfoContainer>
+      <Flex sx={{ gap: 2 }}>
+        <Typography variant="h5">{teamInfo.name ?? "No name yet."}</Typography>
+        <Button
+          onClick={() => {
+            setIsEditTeamNameModalOpen(true);
+          }}
+        >
+          <EditIcon color="primary" />
+        </Button>
+      </Flex>
+      <ul>
+        {teamInfo.users.map((teammate, index) => (
+          <li key={index}>
+            <UserName>{teammate.name ?? `Anon ${index}`}</UserName>
+          </li>
+        ))}
+      </ul>
+    </TeamInfoContainer>
+  </TeamContainer>);
+
+  const StatsComponent = () => (<StatsContainer>
+    <Table>
+      {/* <thead>
+        <TableRow>
+          <EmojiCell></EmojiCell>
+          <TableCellHeader>Stats</TableCellHeader>
+          <TableCell></TableCell>
+        </TableRow>
+      </thead> */}
+      <tbody>
+        {!!startDateObj && (
+          <TableRow>
+            <EmojiCell>🕒</EmojiCell>
+            <TableCell>Active since</TableCell>
+            <TableCellR>
+              <b>
+                {startDateObj.toLocaleDateString("en-US", {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                })}
+              </b>
+            </TableCellR>
+          </TableRow>
+        )}
+
+        <TableRow>
+          <EmojiCell>🕒</EmojiCell>
+          <TableCell>Latest Streak</TableCell>
+          <TableCellR>
+            <b>{teamInfo.currentStreak}</b>
+          </TableCellR>
+        </TableRow>
+        <TableRow>
+          <EmojiCell>🔥</EmojiCell>
+          <TableCell>Longest Streak</TableCell>
+          <TableCellR>
+            <b>{teamInfo.longestStreak}</b>
+          </TableCellR>
+        </TableRow>
+        {recentProblems.length > 0 && (
+          <TableRow>
+            <EmojiCell>❓</EmojiCell>
+            <TableCell>Latest Results</TableCell>
+            <TableCellR>{generateResultString(recentProblems[0])}</TableCellR>
+          </TableRow>
+        )}
+      </tbody>
+    </Table>
+  </StatsContainer>);
+
+  const ProblemsComponent = () => (
+    <DropdownContainer>
+      {/* 
+    Tried Commenting:
+    <DropdownHeader onClick={toggleDropdown}>
+      Recent Problems
+      <DropdownIcon
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        width="24"
+        height="24"
+      >
+        <path fill="none" d="M0 0h24v24H0z" />
+        <path d="M7 10l5 5 5-5z" />
+      </DropdownIcon>
+    </DropdownHeader> */}
+      {/* <DropdownContent style={{ display: isDropdownOpen ? "block" : "none" }}> */}
+      <DropdownContent>
+        {recentProblems.length == 0 ? (
+          <b>Nothing yet.</b>
+        ) : (
+          <Table>
+            <thead>
+              <TableRow>
+                {/* <TableCell>Relay Date</TableCell>
+              <TableCell>Results</TableCell> */}
+                <h2 style={{ marginLeft: "auto", marginRight: "auto" }}>Recent Problems</h2>
+              </TableRow>
+            </thead>
+            <tbody>
+              {/* Newly Added: */}
+              <TableRow>
+                <TableCell><b>Relay Date</b></TableCell>
+                <TableCell><b>Results</b></TableCell>
+              </TableRow>
+              {recentProblems.map((problemResult, index) => {
+                return (
+                  <RelayTableRow
+                    key={index}
+                    onClick={() => {
+                      setDisplayProblemIndex(index);
+                      setIsProblemDisplayOpen(!isProblemDisplayModalOpen);
+                    }}
+                  >
+                    <TableCell>
+                      {new Date(problemResult.date).toLocaleDateString("en-US", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      })}
+                    </TableCell>
+                    <TableCell>{generateResultString(problemResult)}</TableCell>
+                  </RelayTableRow>
+                );
+              })}
+            </tbody>
+          </Table>
+        )}
+      </DropdownContent>
+    </DropdownContainer>);
 
   return (
     <Container>
       <Content>
         <InnerContainer>
-          <TeamContainer>
-            <TeamInfoContainer>
-              <Flex sx={{ gap: 2 }}>
-                <Typography variant="h5">{teamInfo.name ?? "No name yet."}</Typography>
-                <Button
-                  onClick={() => {
-                    setIsEditTeamNameModalOpen(true);
-                  }}
-                >
-                  <EditIcon color="primary" />
-                </Button>
-              </Flex>
-              <ul>
-                {teamInfo.users.map((teammate, index) => (
-                  <li key={index}>
-                    <UserName>{teammate.name ?? `Anon ${index}`}</UserName>
-                  </li>
-                ))}
-              </ul>
-            </TeamInfoContainer>
-          </TeamContainer>
-
-          <StatsContainer>
-            <Table>
-              <thead>
-                <TableRow>
-                  <EmojiCell></EmojiCell>
-                  <TableCellHeader>Stats</TableCellHeader>
-                  <TableCell></TableCell>
-                </TableRow>
-              </thead>
-              <tbody>
-                {!!startDateObj && (
-                  <TableRow>
-                    <EmojiCell>🕒</EmojiCell>
-                    <TableCell>Active since</TableCell>
-                    <TableCellR>
-                      <b>
-                        {startDateObj.toLocaleDateString("en-US", {
-                          weekday: "long",
-                          year: "numeric",
-                          month: "long",
-                          day: "numeric",
-                        })}
-                      </b>
-                    </TableCellR>
-                  </TableRow>
-                )}
-
-                <TableRow>
-                  <EmojiCell>🕒</EmojiCell>
-                  <TableCell>Latest Streak</TableCell>
-                  <TableCellR>
-                    <b>{teamInfo.currentStreak}</b>
-                  </TableCellR>
-                </TableRow>
-                <TableRow>
-                  <EmojiCell>🔥</EmojiCell>
-                  <TableCell>Longest Streak</TableCell>
-                  <TableCellR>
-                    <b>{teamInfo.longestStreak}</b>
-                  </TableCellR>
-                </TableRow>
-                {recentProblems.length > 0 && (
-                  <TableRow>
-                    <EmojiCell>❓</EmojiCell>
-                    <TableCell>Latest Results</TableCell>
-                    <TableCellR>{generateResultString(recentProblems[0])}</TableCellR>
-                  </TableRow>
-                )}
-              </tbody>
-            </Table>
-          </StatsContainer>
+          <ComponentsWrapper>
+            <TeamComponentWrapper>
+              <TeamComponent />
+            </TeamComponentWrapper>
+            <StatsComponentWrapper>
+              <StatsComponent />
+            </StatsComponentWrapper>
+          </ComponentsWrapper>
+          <ProblemsComponent />
         </InnerContainer>
-
-        <DropdownContainer>
-          <DropdownHeader onClick={toggleDropdown}>
-            Recent Problems
-            <DropdownIcon
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              width="24"
-              height="24"
-            >
-              <path fill="none" d="M0 0h24v24H0z" />
-              <path d="M7 10l5 5 5-5z" />
-            </DropdownIcon>
-          </DropdownHeader>
-          <DropdownContent style={{ display: isDropdownOpen ? "block" : "none" }}>
-            {recentProblems.length == 0 ? (
-              <b>Nothing yet.</b>
-            ) : (
-              <Table>
-                <thead>
-                  <TableRow>
-                    <TableCell>Relay Date</TableCell>
-                    <TableCell>Results</TableCell>
-                  </TableRow>
-                </thead>
-                <tbody>
-                  {recentProblems.map((problemResult, index) => {
-                    return (
-                      <RelayTableRow
-                        key={index}
-                        onClick={() => {
-                          setDisplayProblemIndex(index);
-                          setIsProblemDisplayOpen(!isProblemDisplayModalOpen);
-                        }}
-                      >
-                        <TableCell>
-                          {new Date(problemResult.date).toLocaleDateString("en-US", {
-                            year: "numeric",
-                            month: "long",
-                            day: "numeric",
-                          })}
-                        </TableCell>
-                        <TableCell>{generateResultString(problemResult)}</TableCell>
-                      </RelayTableRow>
-                    );
-                  })}
-                </tbody>
-              </Table>
-            )}
-          </DropdownContent>
-        </DropdownContainer>
         <ProblemDisplayModal
           problemToShow={displayProblemIndex == -1 ? null : recentProblems[displayProblemIndex]}
           // date={}
