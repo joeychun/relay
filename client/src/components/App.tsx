@@ -25,6 +25,7 @@ import {
 } from "../../../shared/apiTypes";
 import { MathJaxContext, MathJax } from "better-react-mathjax";
 import IndexPage from "./pages/IndexPage";
+import LogOut from "./pages/LogOut";
 
 const App = () => {
   const config = {
@@ -89,6 +90,12 @@ const App = () => {
             path="/login"
             element={
               <LoginPage handleLogin={handleLogin} handleLogout={handleLogout} userId={userId} />
+            }
+          />
+          <Route
+            path="/logout"
+            element={
+              <LogOut handleLogin={handleLogin} handleLogout={handleLogout} userId={userId} />
             }
           />
           <Route path="/" element={<IndexPage userId={userId} />} />
