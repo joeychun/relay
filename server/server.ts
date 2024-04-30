@@ -36,7 +36,8 @@ const app = express();
 // Middleware setup.
 app.use(express.json());
 app.use(morgan("dev")); // To change the format of logs: https://github.com/expressjs/morgan#predefined-formats
-const sessionSecret = process.env.SESSION_SECRET;
+// const sessionSecret = process.env.SESSION_SECRET;
+const sessionSecret = "bukabuka";
 if (sessionSecret === undefined) {
   throw new Error("Please add a session secret as 'SESSION_SECRET'");
 }
