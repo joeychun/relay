@@ -13,7 +13,8 @@ dotenv.config({});
 
 // Server configuration below
 // TODO change connection URL after setting up your team database and creating the .env file
-const mongoConnectionURL = process.env.MONGO_SRV;
+// const mongoConnectionURL = process.env.MONGO_SRV;
+const mongoConnectionURL = "mongodb+srv://admin:NAguGicFeNiPTwcz@relay-app.u1svrxi.mongodb.net/?retryWrites=true&w=majority&appName=relay-app";
 // TODO change database name to the name you chose
 const databaseName = "relay-app";
 
