@@ -1,75 +1,41 @@
-# Project Skeleton
+# Welcome to the Relay Game!
 
-## What we provide
+In **Relay**, teams engage in solving a series of problems that update daily, in a relay-like fashion. Each teammate tackles one problem before passing it to the next; the solution to each problem becomes the starting point for the next one. 
 
-- Google Auth (Skeleton.js & auth.js)
-  - Disclaimer: Auth isn't being taught until the second week.
-- Socket Infrastructure (client-socket.js & server-socket.js)
-  - Disclaimer: Socket isn't being taught until the second week.
-- User Model (auth.js & user.js)
+The routineness of the daily challenge and the collaboration required to reach the final answer makes **Relay** a low-stakes, fun way to build community through math for anybody—from casual number enthusiasts to students preparing for Olympiads!
 
-## What you need to change
+(P.S. Thanks to mathdash.live for inspiring me with ideas about a social math game!)
 
-- Change the font in utilities.css
-- Change the Frontend CLIENT_ID for Google Auth (Skeleton.js) (we'll talk about it at the end of week 2)
-- Change the Server CLIENT_ID for Google Auth (auth.js) (we'll talk about it at the end of week 2)
-- Change the Database SRV for Atlas (server.js)
-- Change the Database Name for MongoDB (server.js)
-- Add a favicon to your website at the path client/dist/favicon.ico
-- Update website title in client/dist/index.html
-- Update this README file ;)
-- Update the package.json file with your app name :) (line 2)
+## Functionality: 
+### Lobby page (creating and joining teams):
+- If not already in one, users can start a new Relay team.
+https://drive.google.com/file/d/1U39T7OJvDl2P0jivHWPJcM4UKUXtHq-P/view?usp=drive_link
+- Alternatively, users can join another user’s team by entering their team code.
+https://drive.google.com/file/d/16zACE9OKLNoQmJWmjgNyqgx43n8nYvAY/view?usp=drive_link
 
-## Socket stuff
+### Recruiting page:
+- Unless a team is already full, users can recruit teammates by sharing the team’s unique code. 
+https://drive.google.com/file/d/1rtdxLs4sX0jc-S9rfaveD_P3cJ90qfe0/view?usp=drive_link
 
-Note: we'll be getting to this in lecture in week 2, so don't worry if you don't know it yet
+### Problem page:
+- When a full team is made, teammates engage in daily relay problems. Each teammate tackles one problem before passing it to the next; the solution to each problem becomes the starting point for the next one. 
+https://drive.google.com/file/d/1CvFjaKSJEuIYyy_CiIihCtAeztMfzvQO/view?usp=drive_link
 
-- If you're not using realtime updating or don't need server->client communication, you can remove socket entirely! (server-socket.js, client-socket.js, and anything that imports them)
-- If you are using socket, consider what you want to do with the FIXME in server-socket.js
+### Team page:
+- If their team is active (full roster of members), users can check various team stats, including the longest relay streak, latest performance, and recent problems.
+https://drive.google.com/file/d/12QY7ez_hwOhTuT7HWvgn-ARO1HmSTbOK/view?usp=drive_link
 
-## How to integrate into your own project
+## Credits & Technical details: 
+Big thanks to my sister for helping me flesh out the backend, as well as MIT’s web.lab for providing me with the typescript skeleton. I used a MERN tech stack.
 
-On GitHub download this repository as a zip file, then extract the files into your own repository.
-Warning: make sure you copy the hidden files too: .babelrc, .gitignore, .npmrc, .eslintignore, .eslintrc, and .prettierrc
+## Future extensions:
+These are some extensions I would love to add later, ranging in various difficulties:
 
-Note that you should create a `.env` file to store your secrets. You should have the mongo srv and session secret there. A session secret is just a secret string so the session library can encrypt session data. See `.env.example`.
+- Email notifications (I’m working on this now!) 
+- Have multiple leagues (beginner, medium, hard). 
+- Train a GPT model on math competition problem data to write new relay problems
+- Have the team be able to pick which order contestants go in
+- Have a flexible number of teammates
+- Add category data to questions for better statistics, as well as individual statistics
 
-## Typescript Instructions
 
-This branch is configured to use Typescript in both the frontend and backend.
-In the frontend, if you decide to use TS, you will need to define the Props and State interface for each component.
-In the backend, make sure that you include type signatures when needed.
-
-If you want to come use a js server, change the "start" script of package.json to `"start": "nodemon --ignore client/",` instead of
-`"TS_NODE_PROJECT='./tsconfig.json' nodemon --watch 'server/**/*.ts' --exec 'ts-node' server/server.ts"`
-
-If you want to modify how TS is compiled, you should modify tsconfig.json.
-
-**Sharing interfaces**
-
-In the shared folder, you can export shared interfaces between the frontend and backend. This is to make get and post requests typesafe. Make sure that the interface is in sync with the mongoose schema! See server/models/User.ts.
-
-**Note**
-
-When installing packages, you will also have to install their type signatures. If the TypeScript compiler
-is complaining that some package does not have any type signatures, make sure to do `npm install @types/nameOfPackageHere`. Note that because Heroku deletes all the devDependencies after the build step, make sure to do `npm install dependencyThatTheServerNeeds`. In this setup, you should only include use `npm install somePackage --save-dev` on client-side devDependencies.
-
-## don't touch
-
-the following files students do not need to edit. feel free to read them if you would like.
-
-```
-client/src/index.js
-client/src/utilities.js
-client/src/client-socket.js
-server/validator.js
-server/server-socket.js
-tsconfig.json
-.babelrc
-.npmrc
-.prettierrc
-package-lock.json
-webpack.config.js
-```
-
-## Good luck on your project :)
