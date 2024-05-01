@@ -9,21 +9,24 @@ The routineness of the daily challenge and the collaboration required to reach t
 ## Functionality: 
 ### Lobby page (creating and joining teams):
 - If not already in one, users can start a new Relay team.
-https://drive.google.com/file/d/1U39T7OJvDl2P0jivHWPJcM4UKUXtHq-P/view?usp=drive_link
+![Create Team](https://drive.google.com/file/d/1U39T7OJvDl2P0jivHWPJcM4UKUXtHq-P/view?usp=drive_link)
 - Alternatively, users can join another user’s team by entering their team code.
-https://drive.google.com/file/d/16zACE9OKLNoQmJWmjgNyqgx43n8nYvAY/view?usp=drive_link
+![Join Team](https://drive.google.com/file/d/16zACE9OKLNoQmJWmjgNyqgx43n8nYvAY/view?usp=drive_link)
 
 ### Recruiting page:
 - Unless a team is already full, users can recruit teammates by sharing the team’s unique code. 
-https://drive.google.com/file/d/1rtdxLs4sX0jc-S9rfaveD_P3cJ90qfe0/view?usp=drive_link
+![Team Recruiting](https://drive.google.com/file/d/1rtdxLs4sX0jc-S9rfaveD_P3cJ90qfe0/view?usp=drive_link)
 
 ### Problem page:
 - When a full team is made, teammates engage in daily relay problems. Each teammate tackles one problem before passing it to the next; the solution to each problem becomes the starting point for the next one. 
-https://drive.google.com/file/d/1CvFjaKSJEuIYyy_CiIihCtAeztMfzvQO/view?usp=drive_link
+![Problem Page](https://drive.google.com/file/d/1CvFjaKSJEuIYyy_CiIihCtAeztMfzvQO/view?usp=drive_link)
 
 ### Team page:
 - If their team is active (full roster of members), users can check various team stats, including the longest relay streak, latest performance, and recent problems.
-https://drive.google.com/file/d/12QY7ez_hwOhTuT7HWvgn-ARO1HmSTbOK/view?usp=drive_link
+![Team Page](https://drive.google.com/file/d/12QY7ez_hwOhTuT7HWvgn-ARO1HmSTbOK/view?usp=drive_link)
+- Users can click on one of the recent relay problems in the right table to access the day's questions, the correct answers, and their teams' submitted answers.
+![Team Recent Problem](https://drive.google.com/file/d/1v-Z_IZ4H4jGCtYS-AJuisvHFNu7TeO_d/view?usp=drive_link)
+
 
 ## Credits & Technical details: 
 Big thanks to my sister for helping me flesh out the backend, as well as MIT’s web.lab for providing me with the typescript skeleton. I used a MERN tech stack.
