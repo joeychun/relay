@@ -177,7 +177,7 @@ const ProblemPage = (props: ProblemPageProps) => {
           sx={{ gap: 3 }}
         >
           <ProblemText variant="h5">
-            <MathJax inline>{randomSubproblem.question}</MathJax>
+            <MathJax inline dynamic>{randomSubproblem.question}</MathJax>
           </ProblemText>
           {randomSubproblem.previousAnswer && (
             <Typography variant="body1">
@@ -233,7 +233,7 @@ const ProblemPage = (props: ProblemPageProps) => {
               {`You're all caught up on problems! For now, enjoy this random past problem, or head over to the team page to see your team's statistics.`}
             </Typography>
             <ProblemText variant="h5">
-              <MathJax inline>{randomSubproblem.question}</MathJax>
+              <MathJax inline dynamic>{randomSubproblem.question}</MathJax>
             </ProblemText>
 
             {randomSubproblem.previousAnswer && (
@@ -317,7 +317,7 @@ const ProblemPage = (props: ProblemPageProps) => {
         sx={{ gap: 3 }}
       >
         <ProblemText variant="h5">
-          <MathJax inline>{problemData.question}</MathJax>
+          <MathJax inline dynamic>{problemData.question}</MathJax>
         </ProblemText>
 
         {!previousAttempt ? (
