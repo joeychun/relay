@@ -50,7 +50,7 @@ export interface RelayProblem extends Document {
 }
 
 const RelayProblemSchema: Schema = new Schema({
-  subproblems: { type: [SubproblemSchema], required: true },
+  subproblems: [{ type: Schema.Types.ObjectId, ref: "Subproblem" }],
   date: { type: Date, required: true },
   status: {
     type: String,
