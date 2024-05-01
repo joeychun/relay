@@ -69,7 +69,6 @@ const AdminPage = (props: AdminPageProps) => {
   const handleReleaseAnswer = (problemId: string) => {
     // Handle release answer action
     console.log("Release answer for question:", problemId);
-    // TODO: finish hooking up
     if (!problemId || !userId) return Promise.resolve();
     const body: updateProblemStatusRequestBodyType = {
       problemId,

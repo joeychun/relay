@@ -13,7 +13,7 @@ import {
   TextField,
   DialogActions,
   Typography,
-  CircularProgress
+  CircularProgress,
 } from "@mui/material";
 import { get, post } from "../../utilities";
 import {
@@ -186,8 +186,6 @@ const LobbyPage = (props: LobbyPageProps) => {
     }
   }, [userId]);
 
-  // TODO: right now, errors crash the api but should be returning 404/400 instead of throwing errors
-
   const joinTeam = (code: string) => {
     if (!userId) return Promise.resolve();
     const body: joinTeamRequestBodyType = {
@@ -200,7 +198,6 @@ const LobbyPage = (props: LobbyPageProps) => {
       })
       .catch((e) => {
         setErrorMsg("A team with that code doesn't exist.");
-        // setErrorMsg(e); TODO: return more descriptive error msgs from the api
       });
   };
 
@@ -235,11 +232,23 @@ const LobbyPage = (props: LobbyPageProps) => {
     // improve msg
     if (teamInfo.status === TeamStatus.Active) {
       return (
-        <Flex backgroundColor="#faf9f6" color="black" flexDirection="column"> {/* Changed flexDirection to column */}
-          <Flex justifyContent="center" alignItems="center" height="100vh" width="100%"> {/* Decreased height to 80vh */}
-            <Flex flexDirection="column" alignItems="center"> {/* Changed flexDirection to column */}
-              <Typography variant="h5">You're already part of a team. Head over to start playing!</Typography>
-              <StyledButton2 variant="contained" color="primary" onClick={() => window.location.href = "/problem"}>
+        <Flex backgroundColor="#faf9f6" color="black" flexDirection="column">
+          {" "}
+          {/* Changed flexDirection to column */}
+          <Flex justifyContent="center" alignItems="center" height="100vh" width="100%">
+            {" "}
+            {/* Decreased height to 80vh */}
+            <Flex flexDirection="column" alignItems="center">
+              {" "}
+              {/* Changed flexDirection to column */}
+              <Typography variant="h5">
+                You're already part of a team. Head over to start playing!
+              </Typography>
+              <StyledButton2
+                variant="contained"
+                color="primary"
+                onClick={() => (window.location.href = "/problem")}
+              >
                 Problem Page
               </StyledButton2>
             </Flex>
@@ -249,11 +258,23 @@ const LobbyPage = (props: LobbyPageProps) => {
       );
     } else {
       return (
-        <Flex backgroundColor="#faf9f6" color="black" flexDirection="column"> {/* Changed flexDirection to column */}
-          <Flex justifyContent="center" alignItems="center" height="100vh" width="100%"> {/* Decreased height to 80vh */}
-            <Flex flexDirection="column" alignItems="center"> {/* Changed flexDirection to column */}
-              <Typography variant="h5">You're already part of a team. Continue Recruiting!</Typography>
-              <StyledButton2 variant="contained" color="primary" onClick={() => window.location.href = "/team-recruit"}>
+        <Flex backgroundColor="#faf9f6" color="black" flexDirection="column">
+          {" "}
+          {/* Changed flexDirection to column */}
+          <Flex justifyContent="center" alignItems="center" height="100vh" width="100%">
+            {" "}
+            {/* Decreased height to 80vh */}
+            <Flex flexDirection="column" alignItems="center">
+              {" "}
+              {/* Changed flexDirection to column */}
+              <Typography variant="h5">
+                You're already part of a team. Continue Recruiting!
+              </Typography>
+              <StyledButton2
+                variant="contained"
+                color="primary"
+                onClick={() => (window.location.href = "/team-recruit")}
+              >
                 Recruiting Page
               </StyledButton2>
             </Flex>

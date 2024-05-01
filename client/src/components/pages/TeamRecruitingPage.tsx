@@ -179,7 +179,6 @@ const TeamRecruitingPage = (props: TeamRecruitingPageProps) => {
   const [errorMsg, setErrorMsg] = useState("");
   const [teamInfo, setTeamInfo] = useState<TeamWithInfo | null>(null);
   const [teamIsLoaded, setTeamIsLoaded] = useState<boolean>(false);
-  // TODO (later): add a refresh of team data?
 
   const [showRedText, setShowRedText] = useState(false);
   const [isEditTeamNameModalOpen, setIsEditTeamNameModalOpen] = useState(false);
@@ -227,8 +226,6 @@ const TeamRecruitingPage = (props: TeamRecruitingPageProps) => {
   }
 
   if (!teamInfo) {
-    // TODO: style this better
-    // TODO: add button to go to lobby page
     return (
       <Flex backgroundColor="#faf9f6" color="black" flexDirection="column">
         {" "}
@@ -256,7 +253,6 @@ const TeamRecruitingPage = (props: TeamRecruitingPageProps) => {
       </Flex>
     );
   }
-  // TODO: extra - have share team code copy to clipboard. right now it's a link but is broken
 
   if (teamInfo.status == TeamStatus.Active) {
     return (

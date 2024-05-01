@@ -53,7 +53,6 @@ const ProfilePage = (props: ProfilePageProps) => {
     loadUser();
   }, [userId]);
 
-  // TODO: add this to every page
   if (!userId) {
     window.location.href = "/login";
   }

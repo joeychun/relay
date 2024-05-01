@@ -211,6 +211,10 @@ const loadRandomSubproblem = async (req: TypedRequestQuery<{}>, res) => {
     subproblemData: {
       question: relayProblem.subproblems[randomSubproblemIndex].question,
       category: relayProblem.subproblems[randomSubproblemIndex].category,
+      previousAnswer:
+        randomSubproblemIndex == 0
+          ? undefined
+          : relayProblem.subproblems[randomSubproblemIndex - 1].answer,
     },
   });
 };

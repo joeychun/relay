@@ -124,6 +124,7 @@ export type submitSubproblemAttemptRequestBodyType = {
 export type SubproblemData = {
   category: SubproblemCategory;
   question: string;
+  previousAnswer?: string; // used for random problem
 };
 
 export interface SingleSubproblemAttemptWithUserInfo extends Document {

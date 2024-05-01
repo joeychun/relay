@@ -10,12 +10,11 @@ type LoginPageProps = {
 
 const GOOGLE_CLIENT_ID = "490724076666-g4vf4bbngcqu6v3qgtrcpiokm5a3cusd.apps.googleusercontent.com";
 
-
 const LoginPage = (props: LoginPageProps) => {
   const userId = props.userId;
 
   if (props.userId) {
-    window.location.href = "/problem"; // TODO: change to whatever the home screen is
+    window.location.href = "/problem";
   }
 
   return (
@@ -23,7 +22,7 @@ const LoginPage = (props: LoginPageProps) => {
       <Grid container width="100%" direction="column">
         <Typography variant="h2" align="center" fontWeight="bold" marginBottom="10px">
           Welcome to the relay game! Log in to begin.
-      </Typography>
+        </Typography>
         <Box width="250px" padding="20px">
           <GoogleLogin onSuccess={props.handleLogin} onError={() => console.log("Login Failed")} />
         </Box>

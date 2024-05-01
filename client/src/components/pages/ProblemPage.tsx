@@ -121,6 +121,7 @@ const ProblemPage = (props: ProblemPageProps) => {
   const [randomSubproblem, setRandomSubproblem] = useState<SubproblemData>({
     question: "What is pi?",
     category: SubproblemCategory.Other,
+    previousAnswer: undefined,
   });
 
   const loadSubproblemData = () => {
@@ -175,7 +176,14 @@ const ProblemPage = (props: ProblemPageProps) => {
           justifyContent="center"
           sx={{ gap: 3 }}
         >
-          <ProblemText variant="h5"><MathJax inline>{randomSubproblem.question}</MathJax></ProblemText>
+          <ProblemText variant="h5">
+            <MathJax inline>{randomSubproblem.question}</MathJax>
+          </ProblemText>
+          {randomSubproblem.previousAnswer && (
+            <Typography variant="body1">
+              Answer to use as input: {randomSubproblem.previousAnswer}
+            </Typography>
+          )}
           <Flex
             width="100%"
             flexDirection="column"
@@ -224,7 +232,15 @@ const ProblemPage = (props: ProblemPageProps) => {
             <Typography variant="body1" alignContent={"center"} textAlign={"center"}>
               {`You're all caught up on problems! For now, enjoy this random past problem, or head over to the team page to see your team's statistics.`}
             </Typography>
-            <ProblemText variant="h5"><MathJax inline>{randomSubproblem.question}</MathJax></ProblemText>
+            <ProblemText variant="h5">
+              <MathJax inline>{randomSubproblem.question}</MathJax>
+            </ProblemText>
+
+            {randomSubproblem.previousAnswer && (
+              <Typography variant="body1">
+                Answer to use as input: {randomSubproblem.previousAnswer}
+              </Typography>
+            )}
 
             {/* <Button
               onClick={() => {
@@ -233,7 +249,11 @@ const ProblemPage = (props: ProblemPageProps) => {
             >
               Take me to the team page!
             </Button> */}
-            <StyledButton2 variant="contained" color="primary" onClick={() => window.location.href = "/team"}>
+            <StyledButton2
+              variant="contained"
+              color="primary"
+              onClick={() => (window.location.href = "/team")}
+            >
               Take me to the team page!
             </StyledButton2>
           </Flex>
@@ -296,7 +316,9 @@ const ProblemPage = (props: ProblemPageProps) => {
         justifyContent="center"
         sx={{ gap: 3 }}
       >
-        <ProblemText variant="h5"><MathJax inline>{problemData.question}</MathJax></ProblemText>
+        <ProblemText variant="h5">
+          <MathJax inline>{problemData.question}</MathJax>
+        </ProblemText>
 
         {!previousAttempt ? (
           <Typography variant="body1">You are the first to go!</Typography>

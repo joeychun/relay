@@ -71,9 +71,9 @@ const getCurrentUserTeam = async (
     .sort({ createdAt: -1 }) // Sort in descending order based on creation time
     .populate({
       path: "problem", // Populate the 'problem' field
-      select: ["date", "status"] // Select specific fields from the 'problem' document
+      select: ["date", "status"], // Select specific fields from the 'problem' document
     })
-    .limit(5) // Limit the results to 5 documents
+    .limit(6) // Limit the results to 6 documents, since one might be active and we want to return 5
     .populate({
       path: "subproblemAttempts", // Populate the 'subproblemAttempts' field
       populate: [
@@ -82,21 +82,24 @@ const getCurrentUserTeam = async (
       ],
     })) as any[];
 
-  const recentProblemData = mostRecentAttempts.map((ra) => ({
-    subproblems: ra.subproblemAttempts.map((sa) => sa.subproblem),
-    status: ra.problem.status,
-    date: ra.problem.date,
-    subproblemAttemptsWithUsers: ra.subproblemAttempts.map((sa) => ({
-      _id: sa._id,
-      assignedUser: {
-        name: sa.assignedUser.name,
-        email: sa.assignedUser.email,
-        _id: sa.assignedUser._id,
-        isAdmin: sa.assignedUser.isAdmin,
-      },
-      answer: sa.answer,
-    })),
-  }));
+  const recentProblemData = mostRecentAttempts
+    .filter((ra) => ra.problem.status != ProblemStatus.Active)
+    .slice(0, 5)
+    .map((ra) => ({
+      subproblems: ra.subproblemAttempts.map((sa) => sa.subproblem),
+      status: ra.problem.status,
+      date: ra.problem.date,
+      subproblemAttemptsWithUsers: ra.subproblemAttempts.map((sa) => ({
+        _id: sa._id,
+        assignedUser: {
+          name: sa.assignedUser.name,
+          email: sa.assignedUser.email,
+          _id: sa.assignedUser._id,
+          isAdmin: sa.assignedUser.isAdmin,
+        },
+        answer: sa.answer,
+      })),
+    }));
 
   return res
     .status(200)

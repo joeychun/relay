@@ -73,7 +73,7 @@ const TeamContainer = styled.div`
 `;
 
 const TeamInfoContainer = styled.div`
-// display: flex;
+  // display: flex;
   width: calc(100% - 60px);
   background-color: #ffffff;
   border-radius: 8px;
@@ -274,7 +274,9 @@ const TeamPage = (props: TeamRecruitingPageProps) => {
       get(`/api/team`, {})
         .then((res: teamWithInfoResponseType) => {
           setTeamInfo(res.teamInfo);
-          setRecentProblems((!!res.recentProblems) ? res.recentProblems.filter(rp => rp.status === "revealed") : []);
+          setRecentProblems(
+            !!res.recentProblems ? res.recentProblems.filter((rp) => rp.status === "revealed") : []
+          );
           setTeamIsLoaded(true);
           setDisplayProblemIndex(-1);
         })
@@ -312,7 +314,6 @@ const TeamPage = (props: TeamRecruitingPageProps) => {
     });
   };
 
-  // TODO: ADD state for if no team here. maybe a button to take you back to the lobby?
   if (!teamInfo) {
     return (
       <Flex backgroundColor="#faf9f6" color="black" flexDirection="column">
@@ -369,96 +370,85 @@ const TeamPage = (props: TeamRecruitingPageProps) => {
 
   const startDateObj = teamInfo.dateStarted ? new Date(teamInfo.dateStarted) : null;
 
-  const TeamComponent = () => (<TeamContainer>
-    <TeamInfoContainer>
-      <Flex sx={{ gap: 2 }}>
-        <Typography variant="h5">{teamInfo.name ?? "No name yet."}</Typography>
-        <Button
-          onClick={() => {
-            setIsEditTeamNameModalOpen(true);
-          }}
-        >
-          <EditIcon color="primary" />
-        </Button>
-      </Flex>
-      <ul>
-        {teamInfo.users.map((teammate, index) => (
-          <li key={index}>
-            <UserName>{teammate.name ?? `Anon ${index}`}</UserName>
-          </li>
-        ))}
-      </ul>
-    </TeamInfoContainer>
-  </TeamContainer>);
+  const TeamComponent = () => (
+    <TeamContainer>
+      <TeamInfoContainer>
+        <Flex sx={{ gap: 2 }}>
+          <Typography variant="h5">{teamInfo.name ?? "No name yet."}</Typography>
+          <Button
+            onClick={() => {
+              setIsEditTeamNameModalOpen(true);
+            }}
+          >
+            <EditIcon color="primary" />
+          </Button>
+        </Flex>
+        <ul>
+          {teamInfo.users.map((teammate, index) => (
+            <li key={index}>
+              <UserName>{teammate.name ?? `Anon ${index}`}</UserName>
+            </li>
+          ))}
+        </ul>
+      </TeamInfoContainer>
+    </TeamContainer>
+  );
 
-  const StatsComponent = () => (<StatsContainer>
-    <Table>
-      {/* <thead>
+  const StatsComponent = () => (
+    <StatsContainer>
+      <Table>
+        {/* <thead>
         <TableRow>
           <EmojiCell></EmojiCell>
           <TableCellHeader>Stats</TableCellHeader>
           <TableCell></TableCell>
         </TableRow>
       </thead> */}
-      <tbody>
-        {!!startDateObj && (
+        <tbody>
+          {!!startDateObj && (
+            <TableRow>
+              <EmojiCell>🕒</EmojiCell>
+              <TableCell>Active since</TableCell>
+              <TableCellR>
+                <b>
+                  {startDateObj.toLocaleDateString("en-US", {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  })}
+                </b>
+              </TableCellR>
+            </TableRow>
+          )}
+
           <TableRow>
             <EmojiCell>🕒</EmojiCell>
-            <TableCell>Active since</TableCell>
+            <TableCell>Latest Streak</TableCell>
             <TableCellR>
-              <b>
-                {startDateObj.toLocaleDateString("en-US", {
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                })}
-              </b>
+              <b>{teamInfo.currentStreak}</b>
             </TableCellR>
           </TableRow>
-        )}
-
-        <TableRow>
-          <EmojiCell>🕒</EmojiCell>
-          <TableCell>Latest Streak</TableCell>
-          <TableCellR>
-            <b>{teamInfo.currentStreak}</b>
-          </TableCellR>
-        </TableRow>
-        <TableRow>
-          <EmojiCell>🔥</EmojiCell>
-          <TableCell>Longest Streak</TableCell>
-          <TableCellR>
-            <b>{teamInfo.longestStreak}</b>
-          </TableCellR>
-        </TableRow>
-        {recentProblems.length > 0 && (
           <TableRow>
-            <EmojiCell>❓</EmojiCell>
-            <TableCell>Latest Results</TableCell>
-            <TableCellR>{generateResultString(recentProblems[0])}</TableCellR>
+            <EmojiCell>🔥</EmojiCell>
+            <TableCell>Longest Streak</TableCell>
+            <TableCellR>
+              <b>{teamInfo.longestStreak}</b>
+            </TableCellR>
           </TableRow>
-        )}
-      </tbody>
-    </Table>
-  </StatsContainer>);
+          {recentProblems.length > 0 && (
+            <TableRow>
+              <EmojiCell>❓</EmojiCell>
+              <TableCell>Latest Results</TableCell>
+              <TableCellR>{generateResultString(recentProblems[0])}</TableCellR>
+            </TableRow>
+          )}
+        </tbody>
+      </Table>
+    </StatsContainer>
+  );
 
   const ProblemsComponent = () => (
     <DropdownContainer>
-      {/* 
-    Tried Commenting:
-    <DropdownHeader onClick={toggleDropdown}>
-      Recent Problems
-      <DropdownIcon
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 24 24"
-        width="24"
-        height="24"
-      >
-        <path fill="none" d="M0 0h24v24H0z" />
-        <path d="M7 10l5 5 5-5z" />
-      </DropdownIcon>
-    </DropdownHeader> */}
-      {/* <DropdownContent style={{ display: isDropdownOpen ? "block" : "none" }}> */}
       <DropdownContent>
         {recentProblems.length == 0 ? (
           <b>Nothing yet.</b>
@@ -472,10 +462,13 @@ const TeamPage = (props: TeamRecruitingPageProps) => {
               </TableRow>
             </thead>
             <tbody>
-              {/* Newly Added: */}
               <TableRow>
-                <TableCell><b>Relay Date</b></TableCell>
-                <TableCell><b>Results</b></TableCell>
+                <TableCell>
+                  <b>Relay Date</b>
+                </TableCell>
+                <TableCell>
+                  <b>Results</b>
+                </TableCell>
               </TableRow>
               {recentProblems.map((problemResult, index) => {
                 return (
@@ -501,7 +494,8 @@ const TeamPage = (props: TeamRecruitingPageProps) => {
           </Table>
         )}
       </DropdownContent>
-    </DropdownContainer>);
+    </DropdownContainer>
+  );
 
   return (
     <Container>
