@@ -121,6 +121,10 @@ export type submitSubproblemAttemptRequestBodyType = {
   answer: string;
 };
 
+export type subproblemAttemptRequestBodyType = {
+  subproblemAttemptId: string;
+};
+
 export type SubproblemData = {
   category: SubproblemCategory;
   question: string;

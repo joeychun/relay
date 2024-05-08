@@ -48,6 +48,9 @@ router.post(`/admin/publishProblem`, adminCalls.publishProblem);
 router.post(`/admin/releaseAnswer`, adminCalls.releaseAnswer);
 router.post(`/admin/createProblem`, adminCalls.createProblem);
 
+// emails
+router.post(`/sendBack`, problemCalls.sendBackAnswers);
+
 // anything else falls to this "not found" case
 router.all("*", (req, res) => {
   const msg = `Api route not found: ${req.method} ${req.url}`;

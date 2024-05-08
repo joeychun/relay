@@ -9,6 +9,7 @@ import {
   SubproblemAttemptsData,
   SubproblemData,
   submitSubproblemAttemptRequestBodyType,
+  subproblemAttemptRequestBodyType,
   subproblemAttemptResponseType,
 } from "../../../../shared/apiTypes";
 import { get, post } from "../../utilities";
@@ -116,6 +117,7 @@ const ProblemPage = (props: ProblemPageProps) => {
 
   const [userAnswer, setUserAnswer] = useState("");
   const [subproblemAttempt, setSubproblemAttempt] = useState<SubproblemAttemptsData | null>(null);
+  const [emailMessage, setEmailMessage] = useState("");
 
   // TODO: add a real question here
   const [randomSubproblem, setRandomSubproblem] = useState<SubproblemData>({
@@ -177,7 +179,9 @@ const ProblemPage = (props: ProblemPageProps) => {
           sx={{ gap: 3 }}
         >
           <ProblemText variant="h5">
-            <MathJax inline dynamic>{randomSubproblem.question}</MathJax>
+            <MathJax inline dynamic>
+              {randomSubproblem.question}
+            </MathJax>
           </ProblemText>
           {randomSubproblem.previousAnswer && (
             <Typography variant="body1">
@@ -233,7 +237,9 @@ const ProblemPage = (props: ProblemPageProps) => {
               {`You're all caught up on problems! For now, enjoy this random past problem, or head over to the team page to see your team's statistics.`}
             </Typography>
             <ProblemText variant="h5">
-              <MathJax inline dynamic>{randomSubproblem.question}</MathJax>
+              <MathJax inline dynamic>
+                {randomSubproblem.question}
+              </MathJax>
             </ProblemText>
 
             {randomSubproblem.previousAnswer && (
@@ -286,7 +292,17 @@ const ProblemPage = (props: ProblemPageProps) => {
 
   const handleSendBack = (subproblemAttemptId: string) => {
     console.log("Sending back:", subproblemAttemptId);
-    // TODO: hook up email
+    if (!userId) return Promise.resolve();
+    const body: subproblemAttemptRequestBodyType = {
+      subproblemAttemptId,
+    };
+    return post("/api/sendBack", body)
+      .then(() => {
+        setEmailMessage("Your teammate has been notified.");
+      })
+      .catch((error) => {
+        console.error("Error sending email", error);
+      });
   };
 
   // TODO: make a username module
@@ -317,7 +333,9 @@ const ProblemPage = (props: ProblemPageProps) => {
         sx={{ gap: 3 }}
       >
         <ProblemText variant="h5">
-          <MathJax inline dynamic>{problemData.question}</MathJax>
+          <MathJax inline dynamic>
+            {problemData.question}
+          </MathJax>
         </ProblemText>
 
         {!previousAttempt ? (
@@ -369,8 +387,10 @@ const ProblemPage = (props: ProblemPageProps) => {
                 Something seem wrong with the answers your teammate sent? Ask them to check again!
               </Typography>
               <Box>
-                <Button onClick={() => handleSendBack(previousAttempt._id)}>Send back</Button>
+                {/* <Button onClick={() => handleSendBack(previousAttempt._id)}>Send back</Button> */}
+                <Button>Send back</Button>
               </Box>
+              {!!emailMessage && <Typography variant="caption">{emailMessage}</Typography>}
             </Flex>
           )}
         </Flex>

@@ -9,6 +9,7 @@ import {
   getUserTeams,
   lock,
   submitSubproblemAttemptRequestBodyType,
+  subproblemAttemptRequestBodyType,
   subproblemAttemptResponseType,
 } from "../../shared/apiTypes";
 
@@ -27,6 +28,7 @@ import {
   SubproblemAttemptModel,
   SubproblemModel,
 } from "../models/Problem";
+import { alertSendback, alertTurn } from "./emailCalls";
 
 export async function createSubproblemAttempt(
   relayProblemAttemptId: string,
@@ -93,27 +95,39 @@ const submitSubproblemAttempt = async (
       return res.status(404).json({ error: "No parent problem found" });
     }
 
-    const parentRelayProblem = await RelayProblemModel.findById(
-      parentProblemAttempt.problem
-    ).populate<{ subproblems: Subproblem[] }>("subproblems");
-    if (!parentRelayProblem) {
-      // should not happen
-      return res.status(404).json({ error: "No parent problem found" });
-    }
-
     // TODO: LATER EXTENSION - show progress of where your teammates are.
-    if (
-      parentProblemAttempt.subproblemAttempts.length < NUM_PROBLEMS &&
-      parentProblemAttempt.subproblemAttempts[parentProblemAttempt.subproblemAttempts.length - 1]
-        ._id == subproblemAttempt._id
-    ) {
+    // Not the last one, so notify
+    if (subproblem.index < parentProblemAttempt.subproblemAttempts.length - 1) {
       // TODO: notify the next user here
+      try {
+        const nextSubproblemAttempt = parentProblemAttempt.subproblemAttempts[subproblem.index + 1];
+        const userToNotify = (await UserModel.findById(nextSubproblemAttempt.assignedUser)) as User;
+
+        await alertTurn(userToNotify);
+      } catch (e) {
+        return res.status(400).json({ error: e });
+      }
     }
 
     // return same as in loadSubproblemAttempt
 
     return res.status(200).json({});
   });
+};
+
+const sendBackAnswers = async (req: TypedRequestBody<subproblemAttemptRequestBodyType>, res) => {
+  const subproblemAttempt = await SubproblemAttemptModel.findById(req.body.subproblemAttemptId);
+  if (!subproblemAttempt) {
+    // should not happen
+    return res.status(404).json({ error: "No subproblem attempt found" });
+  }
+  const user = (await UserModel.findById(subproblemAttempt.assignedUser)) as User;
+  try {
+    await alertSendback(user);
+    return res.status(200).json({});
+  } catch (e) {
+    return res.status(400).json({ error: e });
+  }
 };
 
 const loadSubproblemAttempt = async (
@@ -246,6 +260,7 @@ const loadProblemResults = async (
 
 export default {
   submitSubproblemAttempt,
+  sendBackAnswers,
   loadSubproblemAttempt,
   loadRandomSubproblem,
   loadProblemResults,

@@ -8,13 +8,15 @@ import path from "path"; // Allows us to retrieve file paths
 import auth from "./auth"; // weblab authentication helper
 import socketManager from "./server-socket"; // websockets
 import api from "./api";
+import cors from "cors";
+import nodemailer from "nodemailer";
+
 // Loads environmental variables
 dotenv.config({});
 
 // Server configuration below
 // TODO change connection URL after setting up your team database and creating the .env file
-// const mongoConnectionURL = process.env.MONGO_SRV;
-const mongoConnectionURL = "mongodb+srv://admin:NAguGicFeNiPTwcz@relay-app.u1svrxi.mongodb.net/?retryWrites=true&w=majority&appName=relay-app";
+const mongoConnectionURL = process.env.MONGO_SRV;
 // TODO change database name to the name you chose
 const databaseName = "relay-app";
 
@@ -35,9 +37,9 @@ const app = express();
 
 // Middleware setup.
 app.use(express.json());
+app.use(cors());
 app.use(morgan("dev")); // To change the format of logs: https://github.com/expressjs/morgan#predefined-formats
-// const sessionSecret = process.env.SESSION_SECRET;
-const sessionSecret = "bukabuka";
+const sessionSecret = process.env.SESSION_SECRET;
 if (sessionSecret === undefined) {
   throw new Error("Please add a session secret as 'SESSION_SECRET'");
 }
@@ -79,6 +81,25 @@ app.use((err: any, _req: Request, res: Response) => {
 
 const port = process.env.PORT || 3000;
 const server = http.createServer(app);
+
+export const transporter = nodemailer.createTransport({
+  service: "gmail",
+  //   host: "smtp.gmail.com",
+  //   secure: true,
+  auth: {
+    type: "OAuth2",
+    user: process.env.GMAIL_USERNAME,
+    pass: process.env.GMAIL_PSW,
+    clientId: process.env.OAUTH_CLIENTID,
+    clientSecret: process.env.OAUTH_CLIENT_SECRET,
+    refreshToken: process.env.OAUTH_REFRESH_TOKEN,
+  },
+});
+
+transporter.verify((err, success) => {
+  err ? console.log(err) : console.log(`=== Server is ready to take messages: ${success} ===`);
+});
+
 socketManager.init(server);
 server.listen(port, () => {
   console.log(`Server is running on port ${port}`);
