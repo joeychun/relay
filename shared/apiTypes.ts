@@ -135,6 +135,7 @@ export interface SingleSubproblemAttemptWithUserInfo extends Document {
   _id: string;
   assignedUser: UserInfo;
   answer?: string; // If answer is not undefined, it means the user has submitted
+  sentBack?: boolean;
 }
 
 export type SubproblemAttemptsData = {

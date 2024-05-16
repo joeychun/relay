@@ -24,6 +24,7 @@ import {
 } from "../models/Problem";
 import { createSubproblemAttempt } from "./problemCalls";
 import { TeamModel, TeamStatus } from "../models/Team";
+import { alertAnswersReleased, alertTurn } from "./emailCalls";
 
 async function assertUserIsAdmin(userId: string) {
   const user = await UserModel.findById(userId);
@@ -151,6 +152,13 @@ export async function createRelayProblemAttempt(teamId: string, problemId: strin
     savedAttemptWithSubproblemAttempts.subproblemAttempts.push(newSubproblemAttempt);
   }
   const updatedRelayProblemAttempt = await savedAttemptWithSubproblemAttempts.save();
+
+  // Notify the first one
+  const firstSubproblemAttempt = savedAttemptWithSubproblemAttempts.subproblemAttempts[0];
+  const userToNotify = (await UserModel.findById(firstSubproblemAttempt.assignedUser)) as User;
+
+  await alertTurn(userToNotify);
+
   return updatedRelayProblemAttempt;
 }
 
@@ -190,6 +198,25 @@ async function gradeRelayProblemAttempt(relayProblemAttemptId: string) {
   }
   const savedTeam = await team.save();
   return savedTeam;
+}
+
+async function notifyAnswersRelayProblem(problemId: string) {
+  // go through the subproblems and check that the answer matches up
+
+  const relayProblemAttempts = (await RelayProblemAttemptModel.find({
+    problem: problemId,
+  }).populate({
+    path: "team",
+    populate: [{ path: "users" }],
+  })) as any[];
+
+  const allParticipatingUsers = relayProblemAttempts.flatMap((r) => r.team.users);
+
+  await Promise.all(allParticipatingUsers.map((user) => alertAnswersReleased(user))).then(
+    (results) => {
+      console.log("Success", results);
+    }
+  );
 }
 
 const publishProblem = async (
@@ -269,6 +296,14 @@ const releaseAnswer = async (
   } catch (error) {
     // If any promise is rejected, handle the error here
     console.log("ERROR WHEN RELEASING", error);
+    res.status(400).json({ error }); // Send a 400 response with the error message
+    return;
+  }
+
+  try {
+    await notifyAnswersRelayProblem(req.body.problemId);
+  } catch (error) {
+    console.log("ERROR WHEN sending email for releasing answers", error);
     res.status(400).json({ error }); // Send a 400 response with the error message
     return;
   }

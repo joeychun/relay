@@ -121,9 +121,15 @@ const sendBackAnswers = async (req: TypedRequestBody<subproblemAttemptRequestBod
     // should not happen
     return res.status(404).json({ error: "No subproblem attempt found" });
   }
+  if (!!subproblemAttempt.sentBack) {
+    // already sent back, do nothing
+    return res.status(200).json({});
+  }
   const user = (await UserModel.findById(subproblemAttempt.assignedUser)) as User;
   try {
     await alertSendback(user);
+    subproblemAttempt.sentBack = true;
+    await subproblemAttempt.save();
     return res.status(200).json({});
   } catch (e) {
     return res.status(400).json({ error: e });
@@ -196,6 +202,7 @@ const loadSubproblemAttempt = async (
             isAdmin: attempt.assignedUser.isAdmin,
           },
           answer: attempt.answer,
+          sentBack: attempt.sentBack,
         })) ?? [],
     },
   });

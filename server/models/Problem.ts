@@ -69,6 +69,9 @@ export interface SubproblemAttempt extends Document {
   parentProblemAttempt: Types.ObjectId;
   assignedUser: Types.ObjectId;
   answer?: string; // If answer is not undefined, it means the user has submitted
+
+  // for notifying
+  sentBack: boolean;
 }
 
 const SubproblemAttemptSchema: Schema = new Schema(
@@ -85,6 +88,7 @@ const SubproblemAttemptSchema: Schema = new Schema(
     },
     assignedUser: { type: Schema.Types.ObjectId, ref: "User", required: true },
     answer: { type: String, required: false },
+    sentBack: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

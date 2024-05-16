@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import Sidebar from "../Sidebar";
-import { Typography, TextField, Button, CircularProgress, Box } from "@mui/material";
+import { Typography, TextField, Button, CircularProgress, Box, Tooltip } from "@mui/material";
 import ProblemDisplayer from "../ProblemDisplayer";
 import { Flex } from "rebass/styled-components";
 import {
@@ -299,6 +299,7 @@ const ProblemPage = (props: ProblemPageProps) => {
     return post("/api/sendBack", body)
       .then(() => {
         setEmailMessage("Your teammate has been notified.");
+        loadSubproblemData();
       })
       .catch((error) => {
         console.error("Error sending email", error);
@@ -387,8 +388,21 @@ const ProblemPage = (props: ProblemPageProps) => {
                 Something seem wrong with the answers your teammate sent? Ask them to check again!
               </Typography>
               <Box>
-                {/* <Button onClick={() => handleSendBack(previousAttempt._id)}>Send back</Button> */}
                 <Button>Send back</Button>
+                {/* <Tooltip
+                  title={
+                    !!previousAttempt.sentBack ? `Your teammate has already been notified!` : ""
+                  }
+                >
+                  <span>
+                    <Button
+                      disabled={!!previousAttempt.sentBack}
+                      onClick={() => handleSendBack(previousAttempt._id)}
+                    >
+                      Send back
+                    </Button>
+                  </span>
+                </Tooltip> */}
               </Box>
               {!!emailMessage && <Typography variant="caption">{emailMessage}</Typography>}
             </Flex>
